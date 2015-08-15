@@ -1,72 +1,76 @@
 package problems;
 
 import java.util.*;
-
 /**
  * Cat and Mouse Uva 274
  */
-class Main
+class CatAndMouse
 {
     /**
      * AdjList of catRooms
      */
     Map<String, Set<Vertex>> catRooms = new HashMap<>();
-
     /**
      * AdjList of mouseRooms
      */
     Map<String, Set<Vertex>> mouseRooms = new HashMap<>();
-
     /**
      * Cat home
      */
     Vertex catHome = new Vertex();
-
     /**
      * Mouse home
      */
     Vertex mouseHome = new Vertex();
-
     /**
      * Possible cat path
      */
     Set<String> catPath = new HashSet<>();
-
     /**
-     * Output array
+     * Flag to check if cat is in the path of mouse
      */
-    static List<String[]> output = new ArrayList<>();
+    boolean catCheck = false;
 
+    static int cases = 0;
     /**
-     * Flag to detect if input for cat path is complete
+     * Total room count
      */
-    boolean isCatInput = true;
-
-    /**
-     * Case counter
-     */
-    int count = -1;
+    int roomCnt = 0;
     /**
      * List of rooms
      */
     List<Vertex> vertexLst = new ArrayList<>();
+
+
+    static StringBuilder sb = new StringBuilder();
+
+    static List<String[]> output = new ArrayList<>();
     /**
-     * Main method to accept input
+     * CatAndMouse method to accept input
      * @param args String args
      */
     public static void main(String[] args)
     {
-        Main cm = new Main();
+        CatAndMouse cm = new CatAndMouse();
         cm.processInput();
-        for(int i=0; i<output.size(); )
+//        if(sb.length() == 0)
+//        {
+//            for(int i=0; i<cases; i++)
+//            {
+//                sb.append("N N")
+//                .append('\n')
+//                .append("\n");
+//                output.add(sb.toString());
+//            }
+//        }
+        //System.out.println(sb.toString());
+        for(int i=0; i<output.size(); i++)
         {
-            System.out.println(output.get(i)[0] + " " + output.get(i)[1]);
-            i++;
-            if(i<output.size())
-            System.out.println();
+        	System.out.println(output.get(i)[0] + output.get(i)[1] + output.get(i)[2]);
+        	if(i+1 != output.size())
+        	System.out.println();
         }
     }
-
     /**
      * Enum to hold the colour. As part of DFS search
      */
@@ -76,7 +80,6 @@ class Main
         GREY,
         BLACK;
     }
-
     /**
      * Vertex colour and index
      */
@@ -85,7 +88,6 @@ class Main
         int index;
         Colour colour;
     }
-
     /**
      * Path to store the list of path reachable and if there is a loop existing in between them
      */
@@ -94,6 +96,7 @@ class Main
         Set<String> path;
         boolean hasLoop;
     }
+
     /**
      * Method to construct the path.
      * @param roomList AdjList of rooms
@@ -101,7 +104,7 @@ class Main
      * @return Set of Vertex.
      */
     Path constructPath(Map<String, Set<Vertex>> roomList,
-                               Vertex source, boolean checkForCyleOnly)
+                       Vertex source, boolean checkForCyleOnly)
     {
         //Colour all white
         for(String key : roomList.keySet())
@@ -130,7 +133,7 @@ class Main
      * @return Set of rooms visitable.
      */
     Path dfs(Map<String, Set<Vertex>> roomList,
-                     Vertex source, Path path, boolean checkForCyleOnly)
+             Vertex source, Path path, boolean checkForCyleOnly)
     {
         source.colour = Colour.GREY;
         Set<Vertex> children = roomList.get(String.valueOf(source.index));
@@ -143,11 +146,14 @@ class Main
                     if (path.hasLoop && checkForCyleOnly) {
                         break;
                     }
-                } else if (source.colour == Colour.GREY) {
-                    //Cycle exists, return
-                    path.hasLoop = true;
-                    if (checkForCyleOnly) {
-                        break;
+                }
+                else if (child.colour == Colour.GREY)
+                {
+                    if(checkForCyleOnly) {
+                        if ((child.index == mouseHome.index))
+                            //Cycle exists, return
+                            path.hasLoop = true;
+                            break;
                     }
                 }
             }
@@ -156,52 +162,76 @@ class Main
         path.path.add(String.valueOf(source.index));
         return path;
     }
-
     /**
      * Method accepts inputs from the user and invokes appropriate method.
      */
     void processInput()
     {
         Scanner scan = null;
+        
         try
         {
-            //Scanner scan = new Scanner(System.in);
             scan = new Scanner(System.in);
-            int cases = 0;
-            if(scan.hasNextLine()) {
+            String line = "";
+            if(scan.hasNextLine())
                 cases = Integer.parseInt(scan.nextLine().trim());
-            }
-            for(int i=0; i<cases; i++)
+            if(scan.hasNextLine())
+                scan.nextLine(); //ignore blank
+            for(int i=1; i<= cases; i++)
             {
-                //Set all the initial input to N N
-                output.add(new String[]{"N", "N"});
-            }
-            
-            if(cases != 0) {
-                while (scan.hasNextLine()) {
-                    String line = scan.nextLine();
-                    if (line != null) {
-                        if (line.isEmpty()) {
-                            count++;
-                            if ((count > 0) && count <= cases) {
-                                processOutput(count - 1);
-                                reset();
-                                //This is not possible unless you are providing the input manually and
-                                //not through a file input
-                                if (count == cases) {
-                                    break;
-                                }
-                            }
-                        } else {
-                            if (isCatInput) {
-                                isCatInput = processCatLine(line);
-                            } else {
-                                processMouseLine(line, count);
-                            }
-                        }
+                if(scan.hasNextLine())
+                    line = scan.nextLine().trim();
+                String[] init = line.split(" ");
+                roomCnt = Integer.parseInt(init[0]);
+                vertexLst.add(0, null);
+                for(int r = 1; r <= roomCnt; r++){
+                    Vertex v = new Vertex();
+                    v.index = r;
+                    vertexLst.add(r, v);
+                }
+                catHome = vertexLst.get(Integer.parseInt(init[1]));
+                mouseHome = vertexLst.get(Integer.parseInt(init[2]));
+                boolean endOfCase = false;
+                if(catHome.index == mouseHome.index){
+                    catCheck = true;
+                }
+                while(scan.hasNextLine()){
+                    line = scan.nextLine().trim();
+                    if(line.isEmpty()){
+                        endOfCase = true;
+                        buildOutput(false);
+//                        if(i < cases)
+//                            sb.append("\n");
+                        break;
+                    }
+                    else if(!(line.contains("-1"))){
+                        String[] arr = line.split(" ");
+                        createRooms(arr, catRooms);
+                    }
+                    else{
+                        break;
                     }
                 }
-                processOutput(count);
+                if(!endOfCase) {
+                    //Construct catPath
+                    Path cPath = constructPath(catRooms, catHome, false);
+                    catPath = cPath.path;
+                    while (scan.hasNextLine() && !((line = scan.nextLine().trim()).isEmpty())) {
+                        String[] arr = line.split(" ");
+                        if (catPath.contains(arr[0]) || catPath.contains(arr[1])) {
+                            catCheck = true;
+                        } else {
+                            createRooms(arr, mouseRooms);
+                        }
+                    }
+                    catCheck = catCheck? catCheck : (catPath.contains(String.valueOf(mouseHome.index)));
+                    //Construct mousePath
+                    Path mPath = constructPath(mouseRooms, mouseHome, true);
+                    buildOutput(mPath.hasLoop);
+//                    if(i < cases)
+//                        sb.append("\n");
+                }
+                //reset class member variables
                 reset();
             }
             scan.close();
@@ -221,117 +251,59 @@ class Main
 
     /**
      * Construct output
-     * @param count case count
+     * @param hasCycle
      */
-    void processOutput(int count)
+    void buildOutput(boolean hasCycle)
     {
-        if(!mouseRooms.isEmpty())
-        {
-            boolean hasLoop = constructPath(mouseRooms, mouseHome, true).hasLoop;
-            if(hasLoop)
-            {
-                output.get(count)[1] = "Y";
-            }
-        }
+    	//String s = ((catCheck? 'Y' : 'N') + ' ' + (hasCycle ? 'Y' : 'N') + '\n'); 
+    	//output.add((catCheck? 'Y' : 'N') + ' ' + (hasCycle ? 'Y' : 'N') + '\n');
+    	
+    	String s1 = (catCheck? "Y" : "N");
+    	String s2 = " ";
+    	String s3 = (hasCycle ? "Y" : "N");
+    	String[] arr = new String[3];
+    	arr[0] = s1;
+    	arr[1] = s2;
+    	arr[2] = s3;
+    	output.add(arr);
     }
 
+    /**
+     * Create rooms
+     *
+     * @param arr
+     * @param room
+     */
+    void createRooms(String[] arr, Map<String, Set<Vertex>>room)
+    {
+        if(room.containsKey(arr[0]))
+        {
+            Vertex v = vertexLst.get(Integer.parseInt(arr[1]));
+            room.get(arr[0]).add(v);
+        }
+        else
+        {
+            Vertex v = vertexLst.get(Integer.parseInt(arr[1]));
+            Set<Vertex> set = new HashSet<>();
+            set.add(v);
+            room.put(arr[0], set);
+        }
+    }
     /**
      * Reset input variables
      */
     void reset()
     {
         //Reset all the attributes for the next iteration.
-        isCatInput = true;
         catRooms.clear();
         mouseRooms.clear();
         catPath.clear();
         catHome.index = 0;
+        catHome.colour = null;
         mouseHome.index = 0;
-    }
-
-    /**
-     * Process cat line and construct the AdjList
-     * @param line String input line to be processed
-     * @return true to continue cat line processing. false to stop processing cat lines
-     */
-    boolean processCatLine(String line)
-    {
-        String[] arr = line.trim().split(" ");
-        if(arr.length == 3)
-        {
-            int roomCnt = Integer.parseInt(arr[0]);
-            vertexLst.add(0, null);
-            for(int i=1; i<=roomCnt; i++)
-            {
-                //Create a list of Vertices(rooms)
-                Vertex v = new Vertex();
-                v.index = i;
-                vertexLst.add(i, v);
-            }
-            catHome.index = Integer.parseInt(arr[1]);
-            mouseHome.index = Integer.parseInt(arr[2]);
-            if(catHome.index == mouseHome.index)
-            {
-            	output.get(count)[0] = "Y";	
-            }
-        }
-        else
-        {
-            if(!arr[0].equals("-1"))
-            {
-                if(catRooms.containsKey(arr[0]))
-                {
-                    Vertex v = vertexLst.get(Integer.parseInt(arr[1]));
-                    catRooms.get(arr[0]).add(v);
-                }
-                else
-                {
-                    Vertex v = vertexLst.get(Integer.parseInt(arr[1]));
-                    Set<Vertex> set = new HashSet<>();
-                    set.add(v);
-                    catRooms.put(arr[0], set);
-                }
-            }
-            else
-            {
-                //Cat input ends here. Process the cat input data and prepare for mouse input.
-                if(!catRooms.isEmpty()) {
-                    catPath = constructPath(catRooms, catHome, false).path;
-                }
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Process mouse lines and construct the AdjList
-     * @param line String line
-     * @param count case count
-     */
-    void processMouseLine(String line, int count)
-    {
-
-        String[] arr = line.trim().split(" ");
-        if(catPath.contains(arr[0])
-                || catPath.contains(arr[1]))
-        {
-            output.get(count)[0] = "Y";
-        }
-        else
-        {
-            if(mouseRooms.containsKey(arr[0]))
-            {
-                Vertex v = vertexLst.get(Integer.parseInt(arr[1]));
-                mouseRooms.get(arr[0]).add(v);
-            }
-            else
-            {
-                Vertex v = vertexLst.get(Integer.parseInt(arr[1]));
-                Set<Vertex> set = new HashSet<>();
-                set.add(v);
-                mouseRooms.put(arr[0], set);
-            }
-        }
+        mouseHome.colour = null;
+        catCheck = false;
+        roomCnt = 0;
+        vertexLst.clear();
     }
 }
