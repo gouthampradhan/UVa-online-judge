@@ -53,20 +53,8 @@ class CatAndMouse
     {
         CatAndMouse cm = new CatAndMouse();
         cm.processInput();
-//        if(sb.length() == 0)
-//        {
-//            for(int i=0; i<cases; i++)
-//            {
-//                sb.append("N N")
-//                .append('\n')
-//                .append("\n");
-//                output.add(sb.toString());
-//            }
-//        }
-        //System.out.println(sb.toString());
         for(int i=0; i<output.size(); i++)
         {
-        	//System.out.println(output.get(i)[0] + output.get(i)[1] + output.get(i)[2]);
         	System.out.println(output.get(i));
         	if(i+1 != output.size())
         	System.out.println();
@@ -201,8 +189,6 @@ class CatAndMouse
                     if(line.isEmpty()){
                         endOfCase = true;
                         buildOutput(false);
-//                        if(i < cases)
-//                            sb.append("\n");
                         break;
                     }
                     else if(!(line.contains("-1"))){
@@ -229,8 +215,6 @@ class CatAndMouse
                     //Construct mousePath
                     Path mPath = constructPath(mouseRooms, mouseHome, true);
                     buildOutput(mPath.hasLoop);
-//                    if(i < cases)
-//                        sb.append("\n");
                 }
                 //reset class member variables
                 reset();
@@ -256,15 +240,6 @@ class CatAndMouse
      */
     void buildOutput(boolean hasCycle)
     {
-    	//String s = ((catCheck? 'Y' : 'N') + ' ' + (hasCycle ? 'Y' : 'N') + '\n'); 
-    	//output.add((catCheck? 'Y' : 'N') + ' ' + (hasCycle ? 'Y' : 'N') + '\n');
-    	
-//    	String s1 = (catCheck? "Y" : "N");
-//    	String s3 = (hasCycle ? "Y" : "N");
-//    	String[] arr = new String[3];
-//    	arr[0] = s1;
-//    	arr[1] = s2;
-//    	arr[2] = s3;
     	output.add((catCheck? "Y" : "N")+ " " +(hasCycle ? "Y" : "N"));
     }
 
