@@ -44,7 +44,7 @@ class CatAndMouse
 
     static StringBuilder sb = new StringBuilder();
 
-    static List<String[]> output = new ArrayList<>();
+    static List<String> output = new ArrayList<>();
     /**
      * CatAndMouse method to accept input
      * @param args String args
@@ -66,7 +66,8 @@ class CatAndMouse
         //System.out.println(sb.toString());
         for(int i=0; i<output.size(); i++)
         {
-        	System.out.println(output.get(i)[0] + output.get(i)[1] + output.get(i)[2]);
+        	//System.out.println(output.get(i)[0] + output.get(i)[1] + output.get(i)[2]);
+        	System.out.println(output.get(i));
         	if(i+1 != output.size())
         	System.out.println();
         }
@@ -258,14 +259,13 @@ class CatAndMouse
     	//String s = ((catCheck? 'Y' : 'N') + ' ' + (hasCycle ? 'Y' : 'N') + '\n'); 
     	//output.add((catCheck? 'Y' : 'N') + ' ' + (hasCycle ? 'Y' : 'N') + '\n');
     	
-    	String s1 = (catCheck? "Y" : "N");
-    	String s2 = " ";
-    	String s3 = (hasCycle ? "Y" : "N");
-    	String[] arr = new String[3];
-    	arr[0] = s1;
-    	arr[1] = s2;
-    	arr[2] = s3;
-    	output.add(arr);
+//    	String s1 = (catCheck? "Y" : "N");
+//    	String s3 = (hasCycle ? "Y" : "N");
+//    	String[] arr = new String[3];
+//    	arr[0] = s1;
+//    	arr[1] = s2;
+//    	arr[2] = s3;
+    	output.add((catCheck? "Y" : "N")+ " " +(hasCycle ? "Y" : "N"));
     }
 
     /**
