@@ -41,9 +41,6 @@ class CatAndMouse
      */
     List<Vertex> vertexLst = new ArrayList<>();
 
-
-    static StringBuilder sb = new StringBuilder();
-
     static List<String> output = new ArrayList<>();
     /**
      * CatAndMouse method to accept input
