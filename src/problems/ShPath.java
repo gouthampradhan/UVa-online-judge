@@ -258,5 +258,6 @@ public class ShPath {
 		//pQ.clear();
 		neighbours.clear();
 		cityName.clear();
+		cache.clear();
 	}
 }
