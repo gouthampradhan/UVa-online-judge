@@ -119,7 +119,6 @@ public class ShPath {
 					line = br.readLine();
 				line = br.readLine();
 				int cityCnt = Integer.parseInt(line);
-				shortestDist = new int[cityCnt+1];
 				for(int cC = 1; cC <= cityCnt; cC++)
 				{
 					//City name
@@ -161,18 +160,20 @@ public class ShPath {
 					{
 						line = br.readLine();
 						StringTokenizer st = new StringTokenizer(line, " ");
-						String name = st.nextToken();
-						if(cache.get(name) == null)
+						String fromCity = st.nextToken();
+						String toCity = st.nextToken();
+						String fromToCity = new StringBuilder().append(fromCity).append(toCity).toString();
+						if(cache.get(fromToCity) == null)
 						{
-							int from = cityName.get(name);
-							int to = cityName.get(st.nextToken());
-							int dist = findShortestPath(from, to);
+							int from = cityName.get(fromCity);
+							int to = cityName.get(toCity);
+							int dist = findShortestPath(from, to, cityCnt);
 							printWriter.println(dist);
-							cache.put(name, dist);
+							cache.put(fromToCity, dist);
 						}
 						else
 						{
-							printWriter.println(cache.get(name));
+							printWriter.println(cache.get(fromToCity));
 						}
 					}
 					reset();
@@ -189,8 +190,9 @@ public class ShPath {
 	 * @param to Destination
 	 * @return shortest path distance.
 	 */
-	int findShortestPath(int from, int to)
+	int findShortestPath(int from, int to, int cityCnt)
 	{
+		shortestDist = new int[cityCnt+1];
 		List<City> cities = neighbours.get(from);
 		if(cities != null)
 		for(City city : cities)
