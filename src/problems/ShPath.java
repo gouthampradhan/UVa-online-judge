@@ -2,12 +2,14 @@ package problems;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
+import java.util.StringTokenizer;
 
 /**
  * 
@@ -41,6 +43,15 @@ public class ShPath {
 	 */
 	PriorityQueue<TempCity> pQ = new PriorityQueue<TempCity>(20, new CityComparator());
 	
+	/**
+	 * Mapping of city name and index
+	 */
+	Map<String, Integer> cache = new HashMap<String, Integer>();
+	
+	/**
+	 * Output writer
+	 */
+	PrintWriter printWriter = new PrintWriter(System.out);
 	/**
 	 * 
 	 * @author gouthamvidyapradhan
@@ -101,35 +112,33 @@ public class ShPath {
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		String line = br.readLine();
 		if(line != null)
-			tC = Integer.parseInt(line.trim());
+			tC = Integer.parseInt(line);
 			for(int i=0; i<tC; i++)
 			{
 				if(i != 0)
 					line = br.readLine();
 				line = br.readLine();
-				int cityCnt = Integer.parseInt(line.trim());
+				int cityCnt = Integer.parseInt(line);
 				shortestDist = new int[cityCnt+1];
 				for(int cC = 1; cC <= cityCnt; cC++)
 				{
 					//City name
 					line = br.readLine();
-					String cName = line.trim();
+					String cName = line;
 					cityName.put(cName, cC);
 					
 					//count of neighbors
 					line = br.readLine();
 					int nC = 0;
 					if(line != null)
-					nC = Integer.parseInt(line.trim());
-					//int nC = Integer.parseInt(br.readLine());
+					nC = Integer.parseInt(line);
 					for(int cnt=0; cnt<nC; cnt++)
 					{
 						line = br.readLine();
-						String[] str = line.trim().split(" ");
+						StringTokenizer st = new StringTokenizer(line, " ");
 						City nCity = new City();
-						//TODO can we store String??
-						nCity.index = Integer.parseInt(str[0]);
-						nCity.distance = Integer.parseInt(str[1]);
+						nCity.index = Integer.parseInt(st.nextToken());
+						nCity.distance = Integer.parseInt(st.nextToken());
 						
 						//Check if the current city list is available?
 						if(neighbours.get(cC) != null)
@@ -150,17 +159,28 @@ public class ShPath {
 					int paths = Integer.parseInt(br.readLine());	
 					for(int iPath=0; iPath<paths; iPath++)
 					{
-						String[] str = br.readLine().split(" ");
-						int from = cityName.get(str[0]);
-						int to = cityName.get(str[1]);
-						//TODO check for null from and to
-						System.out.println(findShortestPath(from, to));
+						line = br.readLine();
+						StringTokenizer st = new StringTokenizer(line, " ");
+						String name = st.nextToken();
+						if(cache.get(name) == null)
+						{
+							int from = cityName.get(name);
+							int to = cityName.get(st.nextToken());
+							int dist = findShortestPath(from, to);
+							printWriter.println(dist);
+							cache.put(name, dist);
+						}
+						else
+						{
+							printWriter.println(cache.get(name));
+						}
 					}
 					reset();
-//					if(i+1 != tC)
-//						System.out.println();
 				}
-			}			
+			}
+			printWriter.flush();
+			printWriter.close();
+			br.close();
 	}
 	
 	/**
@@ -171,12 +191,6 @@ public class ShPath {
 	 */
 	int findShortestPath(int from, int to)
 	{
-		for(int e =0; e<shortestDist.length; e++)
-		{
-			shortestDist[e] = 0; 
-		}
-//		//Shortest distance form source to itself is 0
-//		shortestDist[from] = 0;
 		List<City> cities = neighbours.get(from);
 		if(cities != null)
 		for(City city : cities)
@@ -191,6 +205,8 @@ public class ShPath {
 		while(!pQ.isEmpty())
 		{
 			TempCity tC = pQ.remove();
+			if(tC.distance > shortestDist[tC.index])
+			continue;
 			int curIndex = tC.index;
 			List<City> nCities = neighbours.get(curIndex);
 			if(nCities != null)
