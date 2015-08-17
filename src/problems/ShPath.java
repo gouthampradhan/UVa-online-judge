@@ -96,7 +96,7 @@ public class ShPath {
 	 * @param args
 	 * @throws Exception
 	 */
-	public static void main(String[] args) throws Exception 
+	public static void main (String[] args) throws java.lang.Exception
 	{
 		ShPath sh = new ShPath();
 		sh.processInput();
@@ -193,41 +193,30 @@ public class ShPath {
 	int findShortestPath(int from, int to, int cityCnt)
 	{
 		shortestDist = new int[cityCnt+1];
-		List<City> cities = neighbours.get(from);
-		if(cities != null)
-		for(City city : cities)
+		for(int i=0; i<shortestDist.length; i++)
 		{
-			TempCity tCity = new TempCity();
-			tCity.distance = city.distance;
-			tCity.index = city.index;
-			shortestDist[city.index] = city.distance;
-			pQ.add(tCity);
+			shortestDist[i] = 200001;
 		}
+		TempCity tCity = new TempCity();
+		tCity.distance = 0;
+		tCity.index = from;
+		shortestDist[from] = 0;
+		pQ.add(tCity);
 		//Start relaxing vertices from the pQ
 		while(!pQ.isEmpty())
 		{
 			TempCity tC = pQ.remove();
-			if(tC.distance > shortestDist[tC.index])
+			if(tC.distance != shortestDist[tC.index])
 			continue;
 			int curIndex = tC.index;
 			List<City> nCities = neighbours.get(curIndex);
 			if(nCities != null)
 			for(City child : nCities)
 			{
-				if(child.index != curIndex)
+				if((child.distance + tC.distance)
+						< shortestDist[child.index])
 				{
-					if(shortestDist[child.index] == 0)
-					{
-						relax(child, tC);
-					}
-					else 
-					{
-						if((child.distance + tC.distance)
-								< shortestDist[child.index])
-						{
-							relax(child, tC);
-						}
-					}
+					relax(child, tC);
 				}
 			}
 		}
