@@ -100,7 +100,20 @@ public class ShPath {
 	{
 		ShPath sh = new ShPath();
 		sh.processInput();
-		//System.out.println();
+//		int[][][][] exp = new int[10][][][];
+//		exp[0] = new int[3][1][2];
+//		exp[1] = new int[4][1][2];
+//		
+//		int[][] city = exp[0][1];
+//		
+//		int[][] arr = new int[1][];
+//		arr[0] = new int[2];
+//		arr[1][0] = 1;
+//		arr[1][0] = 3;
+//		Object[][] arr = new City[5][];
+//		arr[1] = new City[5];
+//		City c = null;
+//		arr[1][1] = c;
 	}
 	
 	/**
