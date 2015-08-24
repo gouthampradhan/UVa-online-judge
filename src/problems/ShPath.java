@@ -1,14 +1,11 @@
 package problems;
 
+import java.io.BufferedOutputStream; 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
 import java.util.StringTokenizer;
 
 /**
@@ -16,81 +13,130 @@ import java.util.StringTokenizer;
  * @author gouthamvidyapradhan
  *
  */
-public class ShPath {
+class ShPath {
 
 	/**
 	 * Test case index
 	 */
-	int tC = 0;
+	static byte tC = 0;
 	
 	/**
 	 * Mapping of city name and index
 	 */
-	Map<String, Integer> cityName = new HashMap<String, Integer>();
-	
-	/**
-	 * Neighboring cities AdjList
-	 */
-	Map<Integer, List<City>> neighbours = new HashMap<Integer, List<City>>();
+	static Map<String, Short> cityName = new HashMap<String, Short>();
 	
 	/**
 	 * Array of shortest distances
 	 */
-	int[] shortestDist;
-	
-	/**
-	 * Priority Queue
-	 */
-	PriorityQueue<TempCity> pQ = new PriorityQueue<TempCity>(20, new CityComparator());
+	static int[] shortestDist;
 	
 	/**
 	 * Mapping of city name and index
 	 */
-	Map<String, Integer> cache = new HashMap<String, Integer>();
+	//Map<String, Integer> cache = new HashMap<String, Integer>();
 	
 	/**
 	 * Output writer
 	 */
-	PrintWriter printWriter = new PrintWriter(System.out);
+	static PrintWriter printWriter = new PrintWriter(new BufferedOutputStream(System.out));
+	
 	/**
-	 * 
-	 * @author gouthamvidyapradhan
-	 * Class to hold info about the city
-	 *
+	 * AdjList to store the graph
 	 */
-	class City
-	{
-		int index;
-		int distance;
-	}
+	static short[][][][] cityLst;
 	
 	/**
 	 * 
 	 * @author gouthamvidyapradhan
-	 * Class to hold info about the city
+	 * Customized, MIN Priority queue
 	 *
 	 */
-	class TempCity
+	static class Pqueue
 	{
-		int index;
-		int distance;
-	}
+		static short[][][] pq = new short[100000][1][2];
+		
+		static short rear = 0;
+		
+		static short curr = 0;
+		
+		static short parent = 1;
 
-	/**
-	 * @author gouthamvidyapradhan
-	 * Comparator for the pQ
-	 *
-	 */
-	class CityComparator implements Comparator<TempCity>
-	{
-
-		@Override
-		public int compare(TempCity o1, TempCity o2) 
+		static void push(short[][] e)
+	 	{
+			pq[++rear] = e;
+			curr = rear;
+			parent = (short)(curr >> 1);
+			while((parent > 0) && (pq[curr][0][1] < pq[parent][0][1]))
+			{
+				//exchange
+				short temp[][] = pq[parent];
+				pq[parent] = pq[curr];
+				pq[curr] = temp;
+				curr = parent;
+				parent = (short)(curr >> 1);
+			}
+	 	}
+	 	
+		/**
+		 * Remove front element from the queue
+		 * @return
+		 */
+		static short[][] remove()
 		{
-			return (o1.distance < o2.distance)? -1 : (o1.distance == o2.distance)? 0 : 1;
+			short top[][] = new short[1][2];
+			top[0][0] = pq[1][0][0];
+			top[0][1] = pq[1][0][1];
+			
+			pq[1][0][0] = pq[rear][0][0];
+			pq[1][0][1] = pq[rear][0][1];
+			
+			pq[rear][0][0] = 0;
+			pq[rear][0][1] = 0;
+			rear--;
+			heapify((short)1);
+			//Return the index and the distance
+			return top;
+		}
+		
+		/**
+		 * Heapify
+		 * @param i
+		 */
+		static void heapify(short i)
+		{
+			short left = (short)(i << 1);
+			short right = (short)((i << 1) + 1);
+			short smallest;
+			while(i<=rear)
+			{
+				if((left <= rear) && (pq[left][0][1]!= 0 && (pq[left][0][1] < pq[i][0][1])))
+					smallest = left;
+				else if((right <= rear) && (pq[right][0][1]!= 0 && (pq[right][0][1] < pq[i][0][1])))
+					smallest = right;
+				else break;
+				
+				short[][] temp = new short[1][2];
+				temp[0][0] = pq[i][0][0];
+				temp[0][1] = pq[i][0][1];
+				
+				pq[i] = pq[smallest];
+				pq[smallest] = temp;
+				heapify(smallest);
+			}
+		}
+		
+		/**
+		 * Is pq empty
+		 * @return
+		 */
+		static boolean isEmpty()
+		{
+			if((pq[1][0][0] == 0) && (pq[1][0][1] == 0))
+				return true;
+			return false;
 		}
 	}
-	
+
 	/**
 	 * Main
 	 * @param args
@@ -98,41 +144,21 @@ public class ShPath {
 	 */
 	public static void main (String[] args) throws java.lang.Exception
 	{
-		ShPath sh = new ShPath();
-		sh.processInput();
-//		int[][][][] exp = new int[10][][][];
-//		exp[0] = new int[3][1][2];
-//		exp[1] = new int[4][1][2];
-//		
-//		int[][] city = exp[0][1];
-//		
-//		int[][] arr = new int[1][];
-//		arr[0] = new int[2];
-//		arr[1][0] = 1;
-//		arr[1][0] = 3;
-//		Object[][] arr = new City[5][];
-//		arr[1] = new City[5];
-//		City c = null;
-//		arr[1][1] = c;
-	}
-	
-	/**
-	 * Process input lines
-	 * @throws Exception
-	 */
-	void processInput() throws Exception
-	{
+//		ShPath sh = new ShPath();
+//		sh.processInput();
 		BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 		String line = br.readLine();
 		if(line != null)
-			tC = Integer.parseInt(line);
+			tC = Byte.parseByte(line);
 			for(int i=0; i<tC; i++)
 			{
 				if(i != 0)
 					line = br.readLine();
 				line = br.readLine();
-				int cityCnt = Integer.parseInt(line);
-				for(int cC = 1; cC <= cityCnt; cC++)
+				//int cityCnt = Integer.parseInt(line);
+				short cityCnt = Short.parseShort(line);
+				cityLst = new short[cityCnt+1][][][];
+				for(short cC = 1; cC <= cityCnt; cC++)
 				{
 					//City name
 					line = br.readLine();
@@ -144,26 +170,16 @@ public class ShPath {
 					int nC = 0;
 					if(line != null)
 					nC = Integer.parseInt(line);
+					if(nC == 0)
+						cityLst[cC] = new short[0][0][0];
+					else
+						cityLst[cC] = new short[nC][1][2];
 					for(int cnt=0; cnt<nC; cnt++)
 					{
 						line = br.readLine();
 						StringTokenizer st = new StringTokenizer(line, " ");
-						City nCity = new City();
-						nCity.index = Integer.parseInt(st.nextToken());
-						nCity.distance = Integer.parseInt(st.nextToken());
-						
-						//Check if the current city list is available?
-						if(neighbours.get(cC) != null)
-						{
-							neighbours.get(cC).add(nCity);
-						}
-						else
-						{
-							//Create a new list
-							List<City> list = new ArrayList<City>();
-							list.add(nCity);
-							neighbours.put(cC, list);
-						}
+						cityLst[cC][cnt][0][0] = Short.parseShort(st.nextToken());
+						cityLst[cC][cnt][0][1] = Short.parseShort(st.nextToken());
 					}
 				}
 				if(cityCnt != 0)
@@ -175,27 +191,36 @@ public class ShPath {
 						StringTokenizer st = new StringTokenizer(line, " ");
 						String fromCity = st.nextToken();
 						String toCity = st.nextToken();
-						String fromToCity = new StringBuilder().append(fromCity).append(toCity).toString();
-						if(cache.get(fromToCity) == null)
-						{
-							int from = cityName.get(fromCity);
-							int to = cityName.get(toCity);
+//						String fromToCity = new StringBuilder().append(fromCity).append(toCity).toString();
+//						if(cache.get(fromToCity) == null)
+//						{
+							short from = cityName.get(fromCity);
+							short to = cityName.get(toCity);
 							int dist = findShortestPath(from, to, cityCnt);
 							printWriter.println(dist);
-							cache.put(fromToCity, dist);
-						}
-						else
-						{
-							printWriter.println(cache.get(fromToCity));
-						}
+							printWriter.flush();
+							//cache.put(fromToCity, dist);
+//						}
+//						else
+//						{
+//							printWriter.println(cache.get(fromToCity));
+//						}
 					}
 					reset();
 				}
 			}
-			printWriter.flush();
+			//printWriter.flush();
 			printWriter.close();
 			br.close();
 	}
+	
+//	/**
+//	 * Process input lines
+//	 * @throws Exception
+//	 */
+//	void processInput() throws Exception
+//	{
+//	}
 	
 	/**
 	 * Run dijktra's to find shortest path
@@ -203,63 +228,49 @@ public class ShPath {
 	 * @param to Destination
 	 * @return shortest path distance.
 	 */
-	int findShortestPath(int from, int to, int cityCnt)
+	static int findShortestPath(short from, short to, int cityCnt)
 	{
 		shortestDist = new int[cityCnt+1];
 		for(int i=0; i<shortestDist.length; i++)
 		{
 			shortestDist[i] = 200001;
 		}
-		TempCity tCity = new TempCity();
-		tCity.distance = 0;
-		tCity.index = from;
+		short[][] tCity = new short[1][2];
+		tCity[0][0] = from;
+		tCity[0][1] = 0;
 		shortestDist[from] = 0;
-		pQ.add(tCity);
-		//Start relaxing vertices from the pQ
-		while(!pQ.isEmpty())
+		Pqueue.push(tCity);
+		while(!Pqueue.isEmpty())
 		{
-			TempCity tC = pQ.remove();
-			if(tC.distance != shortestDist[tC.index])
-			continue;
-			int curIndex = tC.index;
-			List<City> nCities = neighbours.get(curIndex);
-			if(nCities != null)
-			for(City child : nCities)
-			{
-				if((child.distance + tC.distance)
-						< shortestDist[child.index])
+			short[][] top = Pqueue.remove();
+			if(top[0][1] != shortestDist[top[0][0]])
+				continue;
+			short[][][] nC = cityLst[top[0][0]];
+			if(nC.length > 0)
+				for(short c[][] : nC)
 				{
-					relax(child, tC);
+					if((c[0][1] + top[0][1]) < shortestDist[c[0][0]])
+					{
+						//relax
+						short sum = (short)(c[0][1] + top[0][1]);
+						shortestDist[c[0][0]] = sum;
+						short[][] nE = new short[1][2];
+						nE[0][0] = c[0][0]; 
+						nE[0][1] = sum;
+						Pqueue.push(nE);
+					}
 				}
-			}
+			
 		}
-		pQ.clear();
-		return shortestDist[to];
-	}
-	
-	/**
-	 * Relax vertices
-	 * @param child
-	 * @param parent
-	 */
-	void relax(City child, TempCity parent)
-	{
-		int sum = child.distance + parent.distance;
-		shortestDist[child.index] = sum;
-		TempCity tcC = new TempCity();
-		tcC.distance = sum;
-		tcC.index = child.index;
-		pQ.add(tcC);
+		return (shortestDist[to] == 200001)? 0 :  shortestDist[to];
 	}
 	
 	/**
 	 * Reset all the initial class member variables
 	 */
-	void reset()
+	static void reset()
 	{
-		//pQ.clear();
-		neighbours.clear();
 		cityName.clear();
-		cache.clear();
+		//cache.clear();
 	}
 }
