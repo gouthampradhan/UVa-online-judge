@@ -67,7 +67,22 @@ class NonStopTravel
 			{
 				return st.nextToken();
 			}
-			return new StringTokenizer(br.readLine()).nextToken();
+			String str = br.readLine();
+			if(str != null && !str.equals(""))
+			{
+				st = new StringTokenizer(str);
+				return st.nextToken();
+			}				
+			return "";
+		}
+		
+		/**
+		 * Close BufferedReader
+		 * @throws Exception
+		 */
+		public void close() throws Exception
+		{
+			br.close();
 		}
 	}
 	
@@ -83,9 +98,7 @@ class NonStopTravel
 		//Intersection
 		byte i;
 		//Seconds
-		byte s;
-		//Parent
-		byte p;
+		int s;
 	}
 	
 	/**
@@ -108,7 +121,23 @@ class NonStopTravel
 	 */
 	static PrintWriter pw = new PrintWriter(new BufferedOutputStream(System.out));
 	
-	static I[] minDistance;
+	/**
+	 * Array to hold the min distance
+	 */
+	static int[] minDistance;
+	
+	/**
+	 * Array to hold the min distance path.
+	 */
+	static byte[] minPath;
+	
+	/**
+	 * number of intersection
+	 */
+	static byte ni;
+	
+	
+	static byte[] path;
 	/**
 	 * 
 	 * @author gouthamvidyapradhan
@@ -132,12 +161,13 @@ class NonStopTravel
 	{
 		MyScanner scan = new MyScanner();
 		String str;
+		int iCase = 1;
 		while(!(str = scan.readString()).equals("0"))
 		{
 			//Create a AdjList of size ni+1 (pos 0 contains null always)
-			if(str.equals('\n'))
+			if(str.equals(""))
 				continue;
-			byte ni = Byte.parseByte(str);
+			ni = Byte.parseByte(str);
 			aL = new ArrayList<List<I>>(ni+1);
 			aL.add(0, null);
 			for(byte i=1; i<=ni; i++)
@@ -149,14 +179,35 @@ class NonStopTravel
 				{
 					I iSec = new I();
 					iSec.i = scan.readByte();
-					iSec.s = scan.readByte();
+					iSec.s = scan.readInt();
 					iL.add(iSec);
 				}
 				aL.add(i, iL);
-				byte from = scan.readByte();
-				byte to = scan.readByte();
 			}
+			byte from = scan.readByte();
+			byte to = scan.readByte();
+			int distance = 0;
+			pw.print("Case " + (iCase++) + ": Path = " + from);
+			if(from != to)
+			{
+				distance = findShPath(from, to);
+				byte i = to;
+				path = new byte[minPath.length];
+				byte ii = 0;
+				path[0] = to;
+				while((minPath[i] != 0) && (minPath[i] != from))
+				{
+					path[++ii] = minPath[i];
+					i = minPath[i];
+				}
+				for(int e = ii; e>=0; e--)
+					pw.print(" " + path[e]);
+			}
+			pw.println("; " + distance + " second delay");
 		}
+		pw.flush();
+		pw.close();
+		scan.close();
 	}
 	
 	/**
@@ -165,23 +216,42 @@ class NonStopTravel
 	 * @param to
 	 * @return
 	 */
-	private byte findShPath(byte from, byte to)
+	static private int findShPath(byte from, byte to)
 	{
-		if(from == to)
-			return 0;
+		minDistance = new int[ni+1];
+		minPath = new byte[ni+1];
+		for(int i=0; i<minDistance.length; i++)
+		{
+			minDistance[i] = Integer.MAX_VALUE;
+		}
 		I start = new I();
 		start.i = from;
 		start.s = 0;
+		minDistance[start.i] = 0;
+		minPath[start.i] = 0; //No parent
 		pq.add(start);
 		while(!pq.isEmpty())
 		{
-			I iSec = pq.remove();
-			List<I> e = aL.get(iSec.i);
-			for(I i : e)
+			I parent = pq.remove();
+			if(parent.s != minDistance[parent.i])
+				continue;
+			List<I> e = aL.get(parent.i);
+			for(I child : e)
 			{
-				
+				if((child.s + parent.s) < minDistance[child.i])
+				{
+					//Update the min distance
+					minDistance[child.i] = child.s + parent.s;
+					I temp = new I();
+					temp.i = child.i;
+					temp.s = child.s + parent.s;
+					//temp.p = parent.i;
+					pq.add(temp);
+					//Keep track of the path
+					minPath[child.i] = parent.i;
+				}
 			}
 		}
-		return 0;
+		return minDistance[to];
 	}
 }
