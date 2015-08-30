@@ -22,6 +22,7 @@ public class TheGreatEscape
 		int index;
 		int time;
 		char data;
+		char pos;
 	}
 	
 	/**
@@ -130,26 +131,6 @@ public class TheGreatEscape
 		}
 		
 		/**
-		 * Read string
-		 * @return
-		 * @throws Exception
-		 */
-		public char readChar() throws Exception
-		{
-			if(st != null && st.hasMoreTokens())
-			{
-				return st.nextToken().charAt(0);
-			}
-			String str = br.readLine();
-			if(str != null && !str.equals(""))
-			{
-				st = new StringTokenizer(str);
-				return st.nextToken().charAt(0);
-			}				
-			return ' ';
-		}
-
-		/**
 		 * Close BufferedReader
 		 * @throws Exception
 		 */
@@ -208,7 +189,6 @@ public class TheGreatEscape
 						door[doorIndex++] = roomIndex; //Map the door index to room index
 					List<Room> childern;
 					if((c-1) >= 0)
-					//if((roomIndex - 1) > 0)
 					{
 						int lIndex = roomIndex - 1;
 						Room lRoom = roomData.get(lIndex);
@@ -219,18 +199,14 @@ public class TheGreatEscape
 								{
 								case 'W':
 									childern = graph.get(lIndex);
-									childern.add(curRoom);//Add the right room the left room
+									childern.add(createRoom(curRoom, 'E'));//Add the right room the left room
 									break;
 								case '.':
 									childern = graph.get(lIndex);
-									childern.add(curRoom);//Add the right room the left room
+									childern.add(createRoom(curRoom, 'E'));//Add the right room the left room
 								default:
 									childern = graph.get(roomIndex);
-									Room left = new Room();
-									left.data = lRoom.data;
-									left.index = lRoom.index;
-									left.time = 1; // set 1 sec initially
-									childern.add(left);//Add the left room to the right room
+									childern.add(createRoom(lRoom, 'W'));
 								}
 								break;
 								
@@ -238,11 +214,7 @@ public class TheGreatEscape
 								if(curRoom.data != 'W')
 								{
 									childern = graph.get(roomIndex);
-									Room left = new Room();
-									left.data = lRoom.data;
-									left.index = lRoom.index;
-									left.time = 1; // set 1 sec initially
-									childern.add(left);//Add the left room to the right room
+									childern.add(createRoom(lRoom, 'W'));
 								}
 								break;
 							case 'N':
@@ -251,12 +223,11 @@ public class TheGreatEscape
 								if(curRoom.data == 'W' || curRoom.data == '.')
 								{
 									childern = graph.get(lIndex);
-									childern.add(curRoom);//Add the right room the left room
+									childern.add(createRoom(curRoom, 'E'));
 								}
 								break;
 						}
 					}
-					//if((roomIndex - col) > 0)
 					if((r - 1) >= 0)
 					{
 						int uIndex = roomIndex - col;
@@ -268,18 +239,16 @@ public class TheGreatEscape
 								{
 								case 'N':
 									childern = graph.get(uIndex);
-									childern.add(curRoom);//Add the lower room the upper room
+									//childern.add(curRoom);//Add the lower room the upper room
+									childern.add(createRoom(curRoom, 'S'));
 									break;
 								case '.':
 									childern = graph.get(uIndex);
-									childern.add(curRoom);//Add the lower room the upper room
+									childern.add(createRoom(curRoom, 'S'));
+									//childern.add(curRoom);//Add the lower room the upper room
 								default:
 									childern = graph.get(roomIndex);
-									Room up = new Room();
-									up.data = uRoom.data;
-									up.index = uRoom.index;
-									up.time = 1; // set 1 sec initially
-									childern.add(up);//Add the upper room the lower room
+									childern.add(createRoom(uRoom, 'N'));
 								}
 								break;
 								
@@ -287,11 +256,7 @@ public class TheGreatEscape
 								if(curRoom.data != 'N')
 								{
 									childern = graph.get(roomIndex);
-									Room up = new Room();
-									up.data = uRoom.data;
-									up.index = uRoom.index;
-									up.time = 1; // set 1 sec initially
-									childern.add(up);//Add the upper room the lower room
+									childern.add(createRoom(uRoom, 'N'));
 								}
 								break;
 							case 'N':
@@ -300,7 +265,8 @@ public class TheGreatEscape
 								if(curRoom.data == 'N' || curRoom.data == '.')
 								{
 									childern = graph.get(uIndex);
-									childern.add(curRoom);//Add the lower room the upper room
+									childern.add(createRoom(curRoom, 'S'));
+									//childern.add(curRoom);//Add the lower room the upper room
 								}
 								break;
 						}
@@ -314,31 +280,14 @@ public class TheGreatEscape
 			{
 				int sec = scan.readInt();
 				Room room = roomData.get(door[d]);
-				int rIndex = room.index;
-				int east = (rIndex - 1);
-				int west = (rIndex + 1);
-				int north = (rIndex - col);
-				int south = (rIndex + col);
-				List<Room> rList = graph.get(rIndex);
+				List<Room> rList = graph.get(room.index);
 				switch(room.data)
 				{
 					case 'N':
-						for(Room r : rList)
-						{
-							if(r.index == east || r.index == west)
-							{
-								r.time = r.time + sec;
-							}
-							else
-							{
-								r.time = r.time + (sec << 1);
-							}
-						}
-						break;
 					case 'S':
 						for(Room r : rList)
 						{
-							if(r.index == east || r.index == west)
+							if(r.pos == 'E' || r.pos == 'W')
 							{
 								r.time = r.time + sec;
 							}
@@ -349,22 +298,10 @@ public class TheGreatEscape
 						}
 						break;
 					case 'E':
-						for(Room r : rList)
-						{
-							if(r.index == north || r.index == south)
-							{
-								r.time = r.time + sec;
-							}
-							else
-							{
-								r.time = r.time + (sec << 1);
-							}
-						}
-						break;
 					case 'W':
 						for(Room r : rList)
 						{
-							if(r.index == north || r.index == south)
+							if(r.pos == 'N' || r.pos == 'S')
 							{
 								r.time = r.time + sec;
 							}
@@ -388,6 +325,20 @@ public class TheGreatEscape
 		scan.close();
 	}
 	
+	/**
+	 * 
+	 * @param room
+	 * @param pos
+	 */
+	private static Room createRoom(Room room, char pos)
+	{
+		Room temp = new Room();
+		temp.data = room.data;
+		temp.index = room.index;
+		temp.time = 1; // set 1 sec initially
+		temp.pos = pos;
+		return temp;
+	}
 	/**
 	 * Dijktra's algorithm to find shortest path
 	 * @param from
