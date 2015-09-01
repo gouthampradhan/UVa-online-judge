@@ -161,22 +161,22 @@ public class MiceAndMaze {
 		byte finish;
 		int time;
 		short nE;
-		byte count = 1;
-		//Initialize graph
 		for(int i=1; i<=tC; i++)
 		{
+			byte count = 1;
 			scan.readString(); // ignore the blank line
-			nC = scan.readByte();
+			nC = scan.readByte(); //number of cells
 			if(nC == 0)
 				continue;
-			finish = scan.readByte();
-			time = scan.readInt();
 			if(nC == 1)
 			{
 				pw.println(1);
 				continue;
 			}
+			finish = scan.readByte();//finish cell
+			time = scan.readInt();//time limit
 			nE = scan.readShort();
+			//Initialize graph
 			for(int v = 0; v<=nC; v++)
 			{
 				List<Cell> list = new ArrayList<Cell>();
@@ -190,14 +190,18 @@ public class MiceAndMaze {
 				to.seconds = scan.readByte();
 				graph.get(from).add(to);
 			}
-			for(byte c=1; (c<=nC && c!=finish); c++)
+			for(byte c=1; c<=nC; c++)
 			{
-				if(findShPath(c, finish, graph, nC) <= time)
-					count++;
+				if(c!=finish)
+				{
+					if(findShPath(c, finish, graph, nC) <= time)
+						count++;
+				}
 			}
 			pw.println(count);
 			if(i != tC)
 				pw.println();
+			graph.clear();
 		}
 		pw.close();
 		scan.close();
@@ -243,6 +247,4 @@ public class MiceAndMaze {
 		}
 		return minDistance[to];
 	}
-
-
 }
