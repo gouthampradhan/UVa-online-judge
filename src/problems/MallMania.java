@@ -5,9 +5,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.BitSet;
 import java.util.List;
-import java.util.Map;
 import java.util.StringTokenizer;
 
 public class MallMania 
@@ -74,45 +73,25 @@ public class MallMania
 	static class Mall
 	{
 		int perimeter;
-		List<String> coordinates;
+		List<Integer> co;
 	}
-	
-	/**
-	 * Vertex node to hold the graph
-	 * @author gouthamvidyapradhan
-	 *
-	 */
-	static class Vertex
-	{
-		int index;
-		int distance;
-		List<Vertex> childern = new ArrayList<>();
-		boolean done;
-	}
-	
-	/**
-	 * Mapping between coordinates and vertex
-	 */
-	static Map<String, Integer> vertices = new HashMap<>();
-	
-	static List<Vertex> graph = new ArrayList<>();
-	
 	static int[] q;
-	
-	static Mall m1;
-	
+	static Mall m1;	
 	static Mall m2;
-	
 	static int xMin;
 	static int xMax;
 	static int yMin;
-	static int yMax;
-	
+	static int yMax;	
 	static int nV = 0;
-	
 	static PrintWriter pw = new PrintWriter(new BufferedOutputStream(System.out));
-	
 	private static MyScanner scan = new MyScanner();
+	private static int[][] min;
+	private static final byte one = 1;
+	private static final short constant = 2047;
+	private static final short MAX_COORDINATE = 2001;
+	private static int col;
+	private static int row;
+
 	
 	public static void main(String[] args) throws Exception
 	{
@@ -128,56 +107,21 @@ public class MallMania
 			int p2 = scan.readInt();
 			readMall(m2, p2);
 			
-			//Build graph
-			int vCnt = 0;
-			int col = ((xMax+1) - xMin);
-			nV = col * ((yMax+1) - yMin);
-			graph.add(new Vertex());//set 0 pos to empty Vertex
-			for(int y=yMax; y>=yMin; y--)
-			{
-				for(int x=xMin; x<=xMax; x++)
-				{
-					Vertex v = new Vertex();
-					v.index = ++vCnt;
-					graph.add(vCnt, v);
-					if((x - 1) >= xMin) //make two way connection to left node
-					{
-						Vertex left = graph.get(x-1);
-						left.childern.add(v);
-						v.childern.add(left);
-					}
-					if((y + col) <= yMax) //make two way connection to top node
-					{
-						Vertex top = graph.get(y + col);
-						top.childern.add(v);
-						v.childern.add(top);
-					}
-					if(vertices.get(x+"x"+y) != null)
-						vertices.put(x+"x"+y, vCnt); //store the vertex of the mall
-				}
-			}
+			col = ((xMax+1) - xMin);
+			row = ((yMax+1) - yMin);
+			nV = col * row;
 			
-			List<Integer> start = new ArrayList<>();
-			List<Integer> destination = new ArrayList<>();
 			int minDistance = Integer.MAX_VALUE;
-			if(m1.perimeter <= m2.perimeter)
+			if(m1.perimeter <= m2.perimeter) //Start from a small mall
 			{
-				for(int v = 0; v<m1.coordinates.size(); v++)
-					start.add(vertices.get(m1.coordinates.get(v)));
-
-				for(int v = 0; v<m2.coordinates.size(); v++)
-					destination.add(vertices.get(m2.coordinates.get(v)));
+				for(int s : m1.co)
+					minDistance = Math.min(minDistance, bfs(s, m2.co));
 			}
 			else
 			{
-				for(int v = 0; v<m2.coordinates.size(); v++)
-					start.add(vertices.get(m2.coordinates.get(v)));
-				
-				for(int v = 0; v<m1.coordinates.size(); v++)
-					destination.add(vertices.get(m1.coordinates.get(v)));
+				for(int s : m2.co)
+					minDistance = Math.min(minDistance, bfs(s, m1.co));
 			}
-			for(int s : start)
-				minDistance = Math.min(minDistance, bfs(s, destination));
 			pw.println(minDistance);
 			reset();
 		}
@@ -193,6 +137,8 @@ public class MallMania
 	 */
 	static private void readMall(Mall m, int p) throws Exception
 	{
+		m.perimeter = p;
+		m.co = new ArrayList<>();
 		for(int i=0; i<p; i++)
 		{
 			int x = scan.readInt();
@@ -201,15 +147,7 @@ public class MallMania
 			xMax = (x > xMax) ? x : xMax;
 			yMin = (y < yMin) ? y : yMin;
 			yMax = (y > yMax) ? y : yMax;
-			List<String> co;
-			m.perimeter = p;
-			if(m.coordinates == null)
-				m.coordinates = co = new ArrayList<>();
-			else
-				co = m.coordinates;
-			String key = x+"x"+y;
-			co.add(key);
-			vertices.put(key, 0);//set the value to 0 initially
+			m.co.add((x<<11) + y); //Store the combination
 		}
 	}
 	
@@ -217,7 +155,6 @@ public class MallMania
 	{
 		m1 = null;
 		m2 = null;
-		graph.clear();
 		xMin = 0;
 		xMax = 0;
 		yMin = 0;
@@ -229,34 +166,73 @@ public class MallMania
 	 * @param s
 	 * @return
 	 */
-	private static int bfs(int s, List<Integer> destination)
+	private static int bfs(int s, List<Integer> d)
 	{
-		Vertex start = graph.get(s);
-		start.distance = 0;
-		if(destination.contains(start.index))
-			return 0; // if mall 1 share the same coordinates as mall 2
-		int head=0;
-		int tail=1;
-		q = new int[nV];
+		if(d.contains(s)) //If mall 1 share the same vertices as mall2. This is an impossible test case.
+			return 0;
+		min = new int[col][row];
+		min[s >> 11][s & constant] = 0; // initial distance set to 0
+		BitSet done = new BitSet(4098000);
+		q = new int[4008004];
+		int head = 0, tail = 0;
 		q[tail++] = s;
+		done.set(s);
 		while(head < tail)
 		{
 			int first = q[head++];
-			Vertex v = graph.get(first);
-			if(!v.done)
+			int x = first >> 11;
+			int y = first & constant;
+			int leftX = x - one;
+			int rightX = x + one;
+			int topY = y + one;
+			int downY = y - one;
+			if((leftX >= xMin) && (leftX >= 0))
 			{
-				List<Vertex> childern = v.childern;
-				for(Vertex c : childern)
+				int child = (leftX << 11) + y;
+				if(!done.get(child))
 				{
-					if(!c.done)
-					{
-						c.distance = v.distance + 1;
-						if(destination.contains(c.index)) //Reached one of the coordinates of m2
-							return c.distance;
-						q[tail++] = c.index;
-					}
+					min[leftX][y] = min[x][y] + 1;
+					if(d.contains(child))//Boundary of second mall reached.
+						return min[leftX][y];
+					q[tail++] = child; // push to queue
+					done.set(child);
 				}
-				v.done = true;
+			}
+			if((rightX <= xMax) && (rightX < MAX_COORDINATE))
+			{
+				int child = (rightX << 11) + y;
+				if(!done.get(child))
+				{
+					min[rightX][y] = min[x][y] + 1;
+					if(d.contains(child))
+						return min[rightX][y];
+					q[tail++] = child;
+					done.set(child);
+				}
+			}
+			if((downY >= 0) && (downY >= yMin))
+			{
+				int child = (x << 11) + downY;
+				if(!done.get(child))
+				{
+					min[x][downY] = min[x][y] + 1;
+					if(d.contains(child))
+						return min[x][downY];
+					q[tail++] = child;
+					done.set(child);
+				}
+			}
+			if((topY <= yMax) && (topY < MAX_COORDINATE))
+			{
+				int child = (x << 11) + topY;
+				if(!done.get(child))
+				{
+					min[x][topY] = min[x][y] + 1;
+					if(d.contains(child))
+						return min[x][topY];
+					q[tail++] = child;
+					done.set(child);
+				}
 			}
 		}
 		return Integer.MAX_VALUE; //Integer.MAX_VALUE indicating no distance.
