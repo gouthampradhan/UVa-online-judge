@@ -42,36 +42,6 @@ public class MallMania
 		}
 		
 		/**
-		 * Read short
-		 * @return
-		 * @throws Exception
-		 */
-		public short readShort() throws Exception
-		{
-			if(st != null && st.hasMoreTokens())
-			{
-				return Short.parseShort(st.nextToken());
-			}
-			st = new StringTokenizer(br.readLine());
-			return Short.parseShort(st.nextToken());
-		}
-
-		/**
-		 * Read byte
-		 * @return
-		 * @throws Exception
-		 */
-		public byte readByte() throws Exception
-		{
-			if(st != null && st.hasMoreTokens())
-			{
-				return Byte.parseByte(st.nextToken());
-			}
-			st = new StringTokenizer(br.readLine());
-			return Byte.parseByte(st.nextToken());
-		}
-		
-		/**
 		 * Read string
 		 * @return
 		 * @throws Exception
@@ -116,7 +86,7 @@ public class MallMania
 	{
 		int index;
 		int distance;
-		List<Vertex> childern;
+		List<Vertex> childern = new ArrayList<>();
 		boolean done;
 	}
 	
@@ -142,44 +112,26 @@ public class MallMania
 	
 	static PrintWriter pw = new PrintWriter(new BufferedOutputStream(System.out));
 	
+	private static MyScanner scan = new MyScanner();
+	
 	public static void main(String[] args) throws Exception
 	{
-		MyScanner scan = new MyScanner();
 		while(true)
 		{
-			int p = scan.readInt();
-			if(p == 0)
+			int p1 = scan.readInt();
+			if(p1 == 0)
 				break;
-			for(int i=0; i<p; i++)
-			{
-				int x = scan.readInt();
-				int y = scan.readInt();
-				xMin = (x < xMin) ? x : xMin;
-				xMax = (x > xMax) ? x : xMax;
-				yMin = (y < yMin) ? y : yMin;
-				yMax = (y > yMax) ? y : yMax;
-				Mall temp = new Mall();
-				temp.perimeter = p;
-				List<String> co;
-				if(temp.coordinates == null)
-					co = new ArrayList<>();
-				else
-					co = temp.coordinates;
-				String key = x+"x"+y;
-				co.add(key);
-				vertices.put(key, 0);//set the value to 0 initially
-				temp.coordinates = co;
-				//There are only two malls possible
-				if(m1 == null)
-					m1 = temp;
-				else
-					m2 = temp;
-			}
+			m1 = new Mall();
+			m2 = new Mall();
+			readMall(m1, p1);
+			
+			int p2 = scan.readInt();
+			readMall(m2, p2);
+			
 			//Build graph
 			int vCnt = 0;
-			int col = (yMax - yMin);
-			nV = col * (xMax - xMin);
-			q = new int[nV];
+			int col = ((xMax+1) - xMin);
+			nV = col * ((yMax+1) - yMin);
 			graph.add(new Vertex());//set 0 pos to empty Vertex
 			for(int y=yMax; y>=yMin; y--)
 			{
@@ -205,15 +157,71 @@ public class MallMania
 				}
 			}
 			
-			int start;
-			
+			List<Integer> start = new ArrayList<>();
+			List<Integer> destination = new ArrayList<>();
+			int minDistance = Integer.MAX_VALUE;
 			if(m1.perimeter <= m2.perimeter)
-				start = vertices.get(m1.coordinates.get(0));
+			{
+				for(int v = 0; v<m1.coordinates.size(); v++)
+					start.add(vertices.get(m1.coordinates.get(v)));
+
+				for(int v = 0; v<m2.coordinates.size(); v++)
+					destination.add(vertices.get(m2.coordinates.get(v)));
+			}
 			else
-				start = vertices.get(m2.coordinates.get(0));
-			
-			pw.println(bfs(start));
+			{
+				for(int v = 0; v<m2.coordinates.size(); v++)
+					start.add(vertices.get(m2.coordinates.get(v)));
+				
+				for(int v = 0; v<m1.coordinates.size(); v++)
+					destination.add(vertices.get(m1.coordinates.get(v)));
+			}
+			for(int s : start)
+				minDistance = Math.min(minDistance, bfs(s, destination));
+			pw.println(minDistance);
+			reset();
 		}
+		pw.flush();
+		pw.close();
+		scan.close();
+	}
+	/**
+	 * Read mall data
+	 * @param m
+	 * @param p
+	 * @throws Exception
+	 */
+	static private void readMall(Mall m, int p) throws Exception
+	{
+		for(int i=0; i<p; i++)
+		{
+			int x = scan.readInt();
+			int y = scan.readInt();
+			xMin = (x < xMin) ? x : xMin;
+			xMax = (x > xMax) ? x : xMax;
+			yMin = (y < yMin) ? y : yMin;
+			yMax = (y > yMax) ? y : yMax;
+			List<String> co;
+			m.perimeter = p;
+			if(m.coordinates == null)
+				m.coordinates = co = new ArrayList<>();
+			else
+				co = m.coordinates;
+			String key = x+"x"+y;
+			co.add(key);
+			vertices.put(key, 0);//set the value to 0 initially
+		}
+	}
+	
+	static private void reset()
+	{
+		m1 = null;
+		m2 = null;
+		graph.clear();
+		xMin = 0;
+		xMax = 0;
+		yMin = 0;
+		yMax = 0;
 	}
 	
 	/**
@@ -221,12 +229,15 @@ public class MallMania
 	 * @param s
 	 * @return
 	 */
-	private static int bfs(int s)
+	private static int bfs(int s, List<Integer> destination)
 	{
 		Vertex start = graph.get(s);
 		start.distance = 0;
+		if(destination.contains(start.index))
+			return 0; // if mall 1 share the same coordinates as mall 2
 		int head=0;
 		int tail=1;
+		q = new int[nV];
 		q[tail++] = s;
 		while(head < tail)
 		{
@@ -239,15 +250,15 @@ public class MallMania
 				{
 					if(!c.done)
 					{
-						//if(c.index == 0) Check for the found condition
-						//return c.distance
 						c.distance = v.distance + 1;
+						if(destination.contains(c.index)) //Reached one of the coordinates of m2
+							return c.distance;
 						q[tail++] = c.index;
 					}
 				}
 				v.done = true;
 			}
 		}
-		return -1; //-1 indicating no distance.
+		return Integer.MAX_VALUE; //Integer.MAX_VALUE indicating no distance.
 	}
 }
