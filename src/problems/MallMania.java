@@ -75,6 +75,7 @@ public class MallMania
 		int perimeter;
 		List<Integer> co;
 	}
+	
 	static int[] q;
 	static Mall m1;	
 	static Mall m2;
@@ -111,18 +112,7 @@ public class MallMania
 			row = ((yMax+1) - yMin);
 			nV = col * row;
 			
-			int minDistance = Integer.MAX_VALUE;
-			if(m1.perimeter <= m2.perimeter) //Start from a small mall
-			{
-				for(int s : m1.co)
-					minDistance = Math.min(minDistance, bfs(s, m2.co));
-			}
-			else
-			{
-				for(int s : m2.co)
-					minDistance = Math.min(minDistance, bfs(s, m1.co));
-			}
-			pw.println(minDistance);
+			pw.println((m1.perimeter <= m2.perimeter) ? bfs(m1.co, m2.co) : bfs(m2.co, m1.co));
 			reset();
 		}
 		pw.flush();
@@ -166,17 +156,24 @@ public class MallMania
 	 * @param s
 	 * @return
 	 */
-	private static int bfs(int s, List<Integer> d)
+	private static int bfs(List<Integer> start, List<Integer> d)
 	{
-		if(d.contains(s)) //If mall 1 share the same vertices as mall2. This is an impossible test case.
-			return 0;
-		min = new int[col][row];
-		min[s >> 11][s & constant] = 0; // initial distance set to 0
 		BitSet done = new BitSet(4098000);
-		q = new int[4008004];
+		min = new int[col][row];
 		int head = 0, tail = 0;
-		q[tail++] = s;
-		done.set(s);
+		q = new int[4004001];
+		for(int s : start)
+		{
+			int sx = s >> 11;
+			int sy = s & constant;
+			//min[sx][sy] = 0; // initial distance set to 0
+			q[tail++] = s;
+			done.set(s);
+			if(d.contains(s)) //If mall 1 share the same vertices as mall2. This is an impossible test case.
+			{
+				return min[sx][sy];
+			}
+		}
 		while(head < tail)
 		{
 			int first = q[head++];
@@ -235,6 +232,6 @@ public class MallMania
 				}
 			}
 		}
-		return Integer.MAX_VALUE; //Integer.MAX_VALUE indicating no distance.
+		return 1; //Integer.MAX_VALUE indicating no distance.
 	}
 }
