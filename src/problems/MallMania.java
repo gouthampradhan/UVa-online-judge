@@ -7,18 +7,21 @@ import java.io.PrintWriter;
 import java.util.BitSet;
 import java.util.StringTokenizer;
 
+/**
+ * 
+ * @author gouthamvidyapradhan
+ * My initial logic failed. Where I used List to store destinations, Mall class to store coordinates and perimeter
+ * and maintained a xMin, xMax, yMin and yMax to maintain a search space area for bfs.
+ * 
+ * Accepted code was 0.562 seconds which used BitSet to maintain destinations and picked the first mall configuration as the starting point with
+ * out maintaining any min-max search area.
+ *
+ */
 public class MallMania 
 {
 	/**
 	 * Scanner class
 	 * @author gouthamvidyapradhan
-	 *
-	 * ## 
-	 * My initial logic failed. Where I used List to store destinations, Mall class to store coordinates and perimeter
-	 * and maintained a xMin, xMax, yMin and yMax to maintain a search space area for bfs.
-	 * 
-	 * Accepted code was 0.562 seconds which used BitSet to maintain destinations and picked the first mall configuration as the starting point with
-	 * out maintaining any min-max search area.
 	 */
 	static class MyScanner 
 	{
