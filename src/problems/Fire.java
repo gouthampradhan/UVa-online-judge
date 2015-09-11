@@ -15,9 +15,10 @@ import java.util.StringTokenizer;
  * The solution was initially not accepted due to a runtime error. The reason for runtime error was the size of the min[][] array and the q[] which was 
  * initialized to a very small size.
  * Solution was finally accepted after increase in the size. Its now proven that the concept with bitwise << and & to combine numbers is simply a hit !!
+ * Accepted 0.395
  *
  */
-public class Fire {
+class Main {
 	/**
 	 * Scanner class
 	 * 
@@ -94,6 +95,8 @@ public class Fire {
 	private static int head, tail = 0;
 	private static int R, C = 0;
 	private static BitSet done = new BitSet(4098000);
+	private static int fireCount = 0;
+	private static int tempCount = 0;
 	private static PrintWriter pw = new PrintWriter(new BufferedOutputStream(System.out));
 
 	/**
@@ -137,6 +140,7 @@ public class Fire {
 							int fire = (x << 10) + y;
 							q[tail++] = (fire << 1); // Last bit of 0 signify coordinates of Fire
 							notAllowed.set(fire);
+							fireCount++;
 							break;
 					}
 				}
@@ -167,6 +171,7 @@ public class Fire {
 		notAllowed.clear();
 		done.clear();
 		head = tail = 0;
+		fireCount = tempCount = 0;
 	}
 	
 	/**
@@ -176,15 +181,16 @@ public class Fire {
 	 */
 	private static int bfs() 
 	{
+		boolean safe = true; //A flag which determines if we could stop after all the joe elements in the queue are exausted.
 		while (head < tail) 
 		{
 			int first = q[head++];
 		    int identity = first & 1;
-			//String binary = Integer.toBinaryString(first);
-			//char identity = binary.charAt(binary.length()-1);
 			first >>= 1;
 			if (identity == 0) // Fire
 			{
+				if(!safe)
+					return -1;
 				int pX = first >> 10;
 				int pY = first & constant;
 				for (int co = 0; co < cox.length; co++) 
@@ -199,8 +205,15 @@ public class Fire {
 						{
 							q[tail++] = temp << 1; // enqueue
 							notAllowed.set(temp);
+							tempCount++;
 						}
 					}
+				}
+				if(--fireCount == 0)
+				{
+					safe = false; // This is the last fire element so, reset the flag to false.
+					fireCount = tempCount;
+					tempCount = 0;
 				}
 			} 
 			else 
@@ -225,6 +238,7 @@ public class Fire {
 								min[cY][cX] = min[pY][pX] + 1;
 								q[tail++] = (temp << 1) + 1;
 								done.set(temp);// Done dont visit again
+								safe = true;
 							}
 						}
 					}
