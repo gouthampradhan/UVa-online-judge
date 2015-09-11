@@ -54,7 +54,7 @@ public class Fire {
 			}
 			return -1;
 		}
-
+		
 		/**
 		 * Read string
 		 * 
@@ -105,10 +105,10 @@ public class Fire {
 		int T;
 		T = MyScanner.readInt();
 		while (T-- > 0) {
-			q = new int[4004001];
+			q = new int[1004004];
 			R = MyScanner.readInt();
 			C = MyScanner.readInt();
-			min = new int[1024][1024];
+			min = new int[R+1][C+1];
 			int joe = 0;
 			boolean joeInBorder = false;
 			for (int y = 0; y < R; y++) 
@@ -179,10 +179,11 @@ public class Fire {
 		while (head < tail) 
 		{
 			int first = q[head++];
-			String binary = Integer.toBinaryString(first);
-			char identity = binary.charAt(binary.length()-1);
+		    int identity = first & 1;
+			//String binary = Integer.toBinaryString(first);
+			//char identity = binary.charAt(binary.length()-1);
 			first >>= 1;
-			if (identity == '0') // Fire
+			if (identity == 0) // Fire
 			{
 				int pX = first >> 10;
 				int pY = first & constant;
