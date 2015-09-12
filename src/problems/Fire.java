@@ -18,7 +18,7 @@ import java.util.StringTokenizer;
  * Accepted 0.395
  *
  */
-class Main {
+public class Fire {
 	/**
 	 * Scanner class
 	 * 
