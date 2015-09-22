@@ -14,10 +14,11 @@ import java.util.StringTokenizer;
  * 
  * @author gouthamvidyapradhan
  * 
- * Accepted 0.225 s. Made a silly RE due to package name.
+ * Accepted 0.179 s. An improved version. Removed some redundant unnecessary check and save almost 70-80ms
+ * 
  *
  */
-public class HeavyCycleEdges 
+class Main 
 {
 	/**
 	 * Scanner class
@@ -71,6 +72,7 @@ public class HeavyCycleEdges
 	private static int[] heavyEdge; //array of heavyEdges
 	private static final String FOREST = "forest";
 	private static final String BLANK = " ";
+	private static int index = 0; //initial index for the heavyEdge index
 	
 	private static Queue<Edge> pq = new java.util.PriorityQueue<Edge>(25001, new Comparator<Edge>() 
 	{
@@ -166,7 +168,7 @@ public class HeavyCycleEdges
 			UnionFind.p = new int[N];
 			UnionFind.rank = new int[N];
 			UnionFind.init();
-			heavyEdge = new int[M]; 
+			heavyEdge = new int[M]; index = 0; 
 			Arrays.fill(heavyEdge, Integer.MAX_VALUE);
 			while(M-- > 0)
 			{
@@ -177,18 +179,15 @@ public class HeavyCycleEdges
 				pq.add(e);
 			}
 			krushkal();
-			if(heavyEdge.length > 0 && heavyEdge[0] != Integer.MAX_VALUE)
+			for(int i=0, l = heavyEdge.length; (i < l && (heavyEdge[i] != Integer.MAX_VALUE)); i++)
 			{
-				for(int i=0, l = heavyEdge.length; (i < l && (heavyEdge[i] != Integer.MAX_VALUE)); i++)
-				{
-					if(i != 0)
-						pw.print(BLANK);
-					pw.print(heavyEdge[i]);
-				}
-				pw.println();
+				if(i != 0)
+					pw.print(BLANK);
+				pw.print(heavyEdge[i]);
 			}
-			else 
-				pw.println(FOREST);
+			if(index == 0) //index 0 indicates nothing has been added to heavyEdges array
+				pw.print(FOREST);
+			pw.println();
 			pq.clear(); //clear pq
 		}
 		pw.flush();
@@ -202,7 +201,6 @@ public class HeavyCycleEdges
 	 */
 	private static void krushkal()
 	{
-		int i = 0;
 		while(!pq.isEmpty())
 		{
 			Edge first = pq.remove();
@@ -211,12 +209,12 @@ public class HeavyCycleEdges
 				if(UnionFind.numOfDisjoinSet == 1)
 				{
 					while(!pq.isEmpty())
-						heavyEdge[i++] = pq.remove().distance; //add all the remaining distances and exit
+						heavyEdge[index++] = pq.remove().distance; //add all the remaining distances and exit
 					return;
 				}
 			}
 			else
-				heavyEdge[i++] = first.distance;
+				heavyEdge[index++] = first.distance;
 		}
 	}
 }
