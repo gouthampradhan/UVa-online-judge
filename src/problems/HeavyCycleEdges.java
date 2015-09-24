@@ -18,7 +18,7 @@ import java.util.StringTokenizer;
  * 
  *
  */
-class Main 
+public class HeavyCycleEdges 
 {
 	/**
 	 * Scanner class
