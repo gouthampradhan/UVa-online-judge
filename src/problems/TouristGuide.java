@@ -20,6 +20,7 @@ import java.util.StringTokenizer;
  *  1. Used << and & operation to combine two numbers without knowing the upper bound limit of numbers. DO NOT DO THIS when you don't know the upper limit of input
  *  2. Using floating point numbers and Math.ceil operation to round to next integer - For long integers this will give incorrect result
  *  example 654254568 / 9999 = 65432 but using floating point numbers and Math.ceil operation will give a result 65433 !!
+ *  solution : (a + b -1) / b
  *  3. Not printing a blank line after the last output case. The description says print a blank line after every case. 
  *
  */
