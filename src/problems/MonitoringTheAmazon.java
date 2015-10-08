@@ -6,11 +6,18 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
 
+/**
+ * 
+ * @author gouthamvidyapradhan
+ * Accepted in first attempt 1.962 s. Definitely needs improvement in the algorithm applied
+ *
+ */
 public class MonitoringTheAmazon {
 
 	/**
@@ -26,28 +33,6 @@ public class MonitoringTheAmazon {
 				new InputStreamReader(System.in));
 
 		private static StringTokenizer st;
-
-		/**
-		 * Read string
-		 * 
-		 * @return
-		 * @throws Exception
-		 */
-		public static String readString() throws Exception {
-			if (st != null && st.hasMoreTokens()) {
-				return st.nextToken();
-			}
-			String str = br.readLine();
-			if (str != null) 
-			{
-				String s = str.trim();
-				if (s.equals(""))
-					return "";
-				st = new StringTokenizer(s);
-				return st.nextToken();
-			}
-			return null;
-		}
 
 		/**
 		 * Read integer
@@ -67,11 +52,21 @@ public class MonitoringTheAmazon {
 				}
 			} catch (IOException e) {
 				close();
-				return -1;
+				return Integer.MAX_VALUE;
 			}
-			return -1;
+			return Integer.MAX_VALUE;
 		}
 		
+		/**
+		 * Read line
+		 * @return
+		 * @throws Exception
+		 */
+		public static String readLine() throws Exception
+		{
+			return br.readLine();
+		}
+
 		/**
 		 * Parse to integer
 		 * @param in
@@ -111,12 +106,18 @@ public class MonitoringTheAmazon {
 	 *
 	 */
 	private static class Station
-	{
-		int x;
-		int y;
-		double d;
-		int index;
-	}
+    {
+        Station(int x, int y, int index)
+        {
+            this.x = x;
+            this.y = y;
+            this.index = index;
+        }
+        int x;
+        int y;
+        int index;
+        double d;
+    }
 	
 	/**
 	 * 
@@ -135,22 +136,25 @@ public class MonitoringTheAmazon {
 				if(s1.x == s2.x)
 					return (s1.y < s2.y)? -1 : ((s1.y > s2.y)? 1 : 0);
 				else
-					return (s1.x < s2.x)? -1 : ((s1.x > s2.x)? 1 : 0);
+					return (s1.x < s2.x)? -1 : 1;
 			}
-			return (s1.d < s2.d)? -1 : ((s1.d > s2.d)? 1 : 0);
+			return (s1.d < s2.d)? -1 : 1;
 		}
 	}
 	
-	private static PrintWriter pw = new PrintWriter(new BufferedOutputStream(System.out));
-	
-	private static Station[] stations;
-	private static int N;
-	private static List[] graph;
-	private static int[] q;
-	private static int count;
 	private static final String REACHABLE = "All stations are reachable.";
 	private static final String UNREACHABLE = "There are stations that are unreachable.";
-	
+	private static int[] X;
+    private static int[] Y;
+    private static int N;
+    private static List<List<Station>> graph;
+    private static BitSet done = new BitSet(500501);
+    private static int[] q;
+    private static int count;
+    private static int head, tail;
+
+	private static PrintWriter pw = new PrintWriter(new BufferedOutputStream(System.out));
+
 	/**
 	 * Main method
 	 * @param args
@@ -160,103 +164,105 @@ public class MonitoringTheAmazon {
 	{
 		while(true)
 		{
-			while((N = MyScanner.readInt()) == -1);
+			while((N = MyScanner.readInt()) == Integer.MAX_VALUE);
 			if(N == 0) break;
-			graph = new List[N];
-			stations = new Station[N];
-			q = new int[N];
-			count = 0;
-			//TODO handle this case if(N == 1 N == 2)
-			for(int i=0; i<N; i++)
+			if(N == 1 || N == 2 || N == 3) 
 			{
-				Station s = new Station();
-				s.x = MyScanner.readInt();
-				s.y = MyScanner.readInt();
-				s.index = i;
-				stations[i] = s;
-			}
-			Station mainStation =  stations[0];
-			int x = mainStation.x;
-			int y = mainStation.y;
-			List<Station> list = new ArrayList<>();
-			for(int j=1, l = stations.length; j<l; j++)
-			{
-				Station adj = stations[j];
-				int cx = adj.x;
-				int cy = adj.y;
-				double dist = Math.sqrt(Math.pow(cx-x, 2) +  Math.pow(cy - y, 2));
-				adj.d  = dist;
-				list.add(adj);
-			}
-			Collections.sort(list, new StationComparator());
-			graph[0] = new ArrayList<Station>();
-			Station child1 = list.get(0);
-			Station child2 = list.get(1);
-			graph[0].add(child1);
-			graph[0].add(child2);
-			int c1 = child1.index;
-			int c2 = child2.index;
-			graph[c1] = new ArrayList<Station>();
-			graph[c2] = new ArrayList<Station>();
-			graph[c1].add(stations[0]); //make two way link
-			graph[c2].add(stations[0]);
-			q[0] = c1;
-			q[1] = c2;
-			count = 2;
-			construct(0);
-			if(count == N)
 				pw.println(REACHABLE);
-			else
-				pw.println(UNREACHABLE);
+				MyScanner.readLine(); //ignore the next line
+				continue;
+			}
+			X = new int[N]; Y = new int[N];
+	        count = 3; //initial count is always 3 !
+	        graph = new ArrayList<>(N);
+	        for(int i=0; i<N; i++)
+	        {
+	            X[i] = MyScanner.readInt();
+	            Y[i] = MyScanner.readInt();
+	            graph.add(i, new ArrayList<Station>());
+	        }
+	        buildGraph(); //construct graph
+	        List<Station> children = graph.get(0);
+	        Station s1 = children.get(0);
+	        Station s2 = children.get(1);
+	        q = new int[N+1]; q[0] = s1.index; q[1] = s2.index;
+	        done.set(0);done.set(s1.index);done.set(s2.index); //mark the vertices as done
+	        head = 0; tail = 2;
+	        bfs(); //check if reachable
+	        if(count == N)
+	            pw.println(REACHABLE);
+	        else
+	            pw.println(UNREACHABLE);
+	        done.clear();
+	        graph.clear();
 		}
 		pw.flush();
 		pw.close();
 		MyScanner.close();
 	}
-	
-	/**
-	 * Construct the graph using BFS
-	 * @param parent
-	 * @param start
-	 */
-	private static void construct(int parent)
-	{
-		int head = 0, tail = 2;
-		while(head < tail)
-		{
-			int first = q[head++];
-			List<Station> children = graph[first];
-			if(children == null)
-				children = new ArrayList<>();
-			graph[first] = children;
-			if(children.size() < 2)
-			{
-				Station s = stations[first];
-				int x = s.x; int y = s.y;
-				List<Station> list = new ArrayList<>();
-				for(int i=0, l = stations.length; i<l; i++)
-				{
-					if(i != parent && i != first)
-					{
-						Station adj = stations[i];
-						int cx = adj.x;
-						int cy = adj.y;
-						double dist = Math.sqrt(Math.pow(cx - x, 2) +  Math.pow(cy - y, 2));
-						adj.d = dist;
-						list.add(adj);
-					}
-				}
-				Collections.sort(list, new StationComparator());
-				Station child = list.get(0);
-				children.add(child);
-				List<Station> reverseLink = graph[child.index];
-				if(reverseLink == null)
-					reverseLink = new ArrayList<>();
-				graph[child.index] = reverseLink;
-				reverseLink.add(s); //make two way link
-				q[tail++] = child.index;
-				count++;
-			}
-		}
-	}
+
+    /**
+     * Create a bi-directional directed graph
+     * @throws Exception
+     */
+    private static void buildGraph() throws Exception
+    {
+        for(int i=0; i<N; i++)
+        {
+            for(int j=(i+1); j<N; j++)
+            {
+                int x1 = X[i]; int y1 = Y[i];
+                int x2 = X[j]; int y2 = Y[j];
+                double distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+                addChild(distance, i, new Station(X[j], Y[j], j)); //forward link
+                addChild(distance, j, new Station(X[i], Y[i], i)); //reverse link
+            }
+            Collections.sort(graph.get(i), new StationComparator());
+        }
+    }
+    
+    /**
+     * Attach children
+     * @param distance distance
+     * @param pos index/vertex
+     * @param child child node to be attached
+     */
+    private static void addChild(double distance, int pos, Station child)
+    {
+    	List<Station> children = graph.get(pos);
+        child.d = distance;
+        children.add(child);
+    }
+    
+    /**
+    *
+    */
+   private static void bfs()
+   {
+       while(head < tail)
+       {
+           int first = q[head++];
+           List<Station> children = graph.get(first);
+           if (!markFinished(children.get(0)))
+               markFinished(children.get(1));
+       }
+   }
+
+   /**
+    * Mark each the station as reachable and add to the queue
+    * @param station Station to be marked as finished
+    * @param tail tail pointer
+    * @return true if marked successfully. False if already marked as finished
+    */
+   private static boolean markFinished(Station station)
+   {
+       if(!done.get(station.index))
+       {
+           done.set(station.index);
+           q[tail++] = station.index;
+           count++;
+           return true;
+       }
+       return false;
+   }
 }
