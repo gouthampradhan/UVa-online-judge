@@ -153,7 +153,8 @@ public class MonitoringTheAmazon
         if(visited[i])
             return 0;
         visited[i] = true;
-        return dfs(graph[i][0]) + dfs(graph[i][1]) + 1;
+        return dfs(graph[i][0]) + dfs(graph[i][1]) + 1; //interesting way of finding out count of nodes using DFS. 
+        //I can learn a lot from smart programmers around the world !
     }
 
     /**
@@ -171,15 +172,16 @@ public class MonitoringTheAmazon
             	{
 	                int x1 = X[i]; int y1 = Y[i];
 	                int x2 = X[j]; int y2 = Y[j];
-	                int distance = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
-	                if(checkMin(distance, min1, x2, y2, c1))
+	                int distance = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1); //no use of sqrt and Math library. 
+	                //Math library calculates using double and double is quite unnecessary usage of resources for this perticular problem  
+	                if(hasNewMin(distance, min1, x2, y2, c1))
 	                {
 	                    min2 = min1;
 	                    min1 = distance;
 	                    c2 = c1;
 	                    c1 = j;
 	                }
-	                else if(checkMin(distance, min2, x2, y2, c2))
+	                else if(hasNewMin(distance, min2, x2, y2, c2))
 	                {
 	                    min2 = distance;
 	                    c2 = j;
@@ -200,7 +202,7 @@ public class MonitoringTheAmazon
      * @param c2
      * @return true if a new minimum is found, false otherwise
      */
-    private static boolean checkMin(int distance, int min, int x, int y, int c)
+    private static boolean hasNewMin(int distance, int min, int x, int y, int c)
     {
         if(distance < min)
         	return true;
