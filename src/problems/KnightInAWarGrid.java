@@ -108,6 +108,7 @@ public class KnightInAWarGrid {
 	private static int[] II;
 	private static BitSet done = new BitSet(13000);
 	private static BitSet waterGrid = new BitSet(13000);
+	private static BitSet visited = new BitSet(13000);
     private static PrintWriter pw = new PrintWriter(new BufferedOutputStream(System.out));
 
     /**
@@ -140,11 +141,7 @@ public class KnightInAWarGrid {
 			}
 			while((W = MyScanner.readInt()) == -1);
 			while(W-- > 0)
-			{
-				int x = MyScanner.readInt();
-				int y = MyScanner.readInt();
-				waterGrid.set((x << 7) + y); //unique value for water grids
-			}
+				waterGrid.set((MyScanner.readInt() << 7) + MyScanner.readInt()); //unique value for water grids
 			bfs();
 			pw.println(CASE + BLANK + count++ + COLON + BLANK + even + BLANK + odd);
 			waterGrid.clear();
@@ -164,22 +161,20 @@ public class KnightInAWarGrid {
 		int head = 0, tail = 0;
 		int q[] = new int[10300];
 		q[tail++] = 0; //add the initial vertex to the queue
-		BitSet temp = new BitSet(13000);
 		while(head < tail)
 		{
 			int first = q[head++];
 			int y = first & constant;
 			int x = first >> 7;
 			int count = 0;
-			
 			for(int i=0, l = I.length; i<l; i++)
 			{
 				int newX = I[i] + x; int newY = II[i] + y;
 				int grid = (newX << 7) + newY; 
-				if(newX >= 0 && newY >= 0 && newX < R && newY < C && !waterGrid.get(grid) && !temp.get(grid)) //this is very tricky, 
+				if(newX >= 0 && newY >= 0 && newX < R && newY < C && !waterGrid.get(grid) && !visited.get(grid)) //this is very tricky, 
 					//generally we do newX < C but in this case it is newX < R
 				{
-					count++; temp.set(grid); //mark this as already counted
+					count++; visited.set(grid); //mark this as already counted
 					if(!done.get(grid)) //very important, this avoids duplicates in the queue
 					{
 						done.set(grid);
@@ -187,7 +182,7 @@ public class KnightInAWarGrid {
 					}
 				}
 			}
-			temp.clear();
+			visited.clear();
 			if((count % 2) == 0) even++; else odd++; //check if the total reachable grids is odd or even
 		}
 	}
