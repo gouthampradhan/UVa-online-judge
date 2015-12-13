@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Comparator;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -14,6 +15,7 @@ import java.util.StringTokenizer;
  * 
  * @author gouthamvidyapradhan
  * Accepted 0.592 s. Very tricky dijktra's algorithm - multiple sources shortest path
+ * Accepted 0.562 s. 
  *
  */
 public class FireStation {
@@ -119,9 +121,9 @@ public class FireStation {
 
 	private static List<List<Intersection>> graph = new ArrayList<>(501);
     private static int T, F, I, testCase, newFStation, maxDist; //Tests, Fire station, Intersection
-    private static boolean done[] = new boolean[501]; //source 
+    private static BitSet done  = new BitSet(501); //visited vertices
+    private static BitSet isFireStation  = new BitSet(501); //firestations (sources)
     private static int[] min = new int[501];
-    private static boolean isFireStation[] = new boolean[501]; //source
     private static List<Intersection> fireSLst = new ArrayList<Intersection>(501);
     private static PrintWriter pw = new PrintWriter(new BufferedOutputStream(System.out));
 
@@ -142,12 +144,11 @@ public class FireStation {
 			{
 				graph.add(i, new ArrayList<Intersection>());
 				min[i] = Integer.MAX_VALUE;
-				isFireStation[i] = false;
 			}
 			while(F-- > 0)
 			{
 				int f = MyScanner.readInt();
-				isFireStation[f] = true;
+				isFireStation.set(f);
 				min[f] = 0;
 				fireSLst.add(new Intersection(f, 0));
 			}
@@ -161,28 +162,21 @@ public class FireStation {
 			}
 			for(int i=1; i<=I ; i++)//Vertices begin from 1 and end at N
 			{
-				if(!isFireStation[i])
+				if(!isFireStation.get(i)) //if this is not a firestation then, set this as a new firestation and run dijktra's.
 				{
-					for(int j=0; j<=I; j++)
-					{
-						done[j] = false;
-						if(isFireStation[j])
-							min[j] = 0;
-						else 
-							min[j] = Integer.MAX_VALUE;
-					}
 					min[i] = 0;
 					pq.add(new Intersection(i, 0)); //add a new source
 					pq.addAll(fireSLst);
 					int max = dijktras();
 					setNewFStation(i, max);
-					pq.clear();
+					min[i] = Integer.MAX_VALUE; //reset
+					pq.clear(); done.clear();
 				}
 			}
 			if(testCase++ > 0)
 				pw.println();
 			pw.println(newFStation);
-			graph.clear(); fireSLst.clear();
+			graph.clear(); fireSLst.clear(); isFireStation.clear(); //clear
 		}
 		pw.flush();
 		pw.close();
@@ -217,13 +211,13 @@ public class FireStation {
 		while(!pq.isEmpty())
 		{
 			Intersection parent = pq.remove();
-			if(done[parent.s]) continue;
+			if(done.get(parent.s)) continue;
 			List<Intersection> children = graph.get(parent.s);
 			for(Intersection c : children)
 			{
-				if(!done[c.s])
+				if(!done.get(c.s))
 				{
-					if(!isFireStation[c.s])
+					if(!isFireStation.get(c.s))
 					{
 						min[c.s] = Math.min(min[c.s], parent.c + c.c);
 						if(min[c.s] != 0)
@@ -231,8 +225,9 @@ public class FireStation {
 					}
 				}
 			}
-			done[parent.s] = true;
+			done.set(parent.s);
 			if(min[parent.s] > max){ max = min[parent.s];} //maintain a max value
+			if(min[parent.s] != 0) min[parent.s] = Integer.MAX_VALUE; //reset. We anyway will not revisit this vertex
 		}
 		return max;
 	}
