@@ -14,7 +14,11 @@ import java.util.StringTokenizer;
  * 
  * @author gouthamvidyapradhan
  * Accepted 0.495 s. Shitty input format, failed many times due to RE. Passed when br.ready() was used.
+ * NOTE: Found the root cause of RE. Its not the input which was shitty but the use of return br.readLine().trim(); was the reason. This fails 
+ * when eof has reached due to NullPointerException.
+ * Also, noticed that use of br.ready() is highly efficient than the manual null check or empty string check.
  *
+ * Accepted 0.462 s ! Fastest in java
  */
 public class ProjectScheduling {
 
@@ -62,7 +66,7 @@ public class ProjectScheduling {
          */
         public static String readLine() throws Exception
         {
-        	return br.readLine().trim();
+        	return br.readLine();
         }
         /**
          * Parse to integer
@@ -113,7 +117,7 @@ public class ProjectScheduling {
     private static BitSet done = new BitSet(27);
     private static int[] toposort = new int[27];
     private static final char A = 'A';
-    private static int MAX = 27;
+    private static final int MAX = 27;
     private static PrintWriter pw = new PrintWriter(new BufferedOutputStream(System.out));
 
     /**
@@ -135,7 +139,7 @@ public class ProjectScheduling {
     			graph.add(new ArrayList<Integer>());
     			max[i] = 0; toposort[i] = 0; weight[i] = -1;
     		}
-    		while(MyScanner.ready()) //this is important, for some reason do-while does not work. RE when do-while was used.
+    		while(MyScanner.ready()) //this is important for efficiency and speed
     		{
     			line = MyScanner.readLine();
     			if(line.trim().equals("")) break;
