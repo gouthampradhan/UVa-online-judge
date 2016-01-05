@@ -18,6 +18,9 @@ import java.util.StringTokenizer;
  * @author gouthamvidyapradhan
  * Accepted 0.112 s. Tricky problem involving multidimensional boxes, requires sorting and then longest path algorithm (toposort and relax vertices where 
  * length from one node to another is a constant 1)
+ * 
+ * Accepted 0.099 s. Improved algorithm, perform a simple sort of boxes and then run the shortest algorithm (relax each vertices). toposort is not 
+ * necessary, because a sorted stack of boxes is equivalent to a toposorted vertices.
  *
  */
 public class StackingBoxes {
@@ -111,8 +114,8 @@ public class StackingBoxes {
     }
     
     private static List<List<Integer>> graph;
-    private static int K, N, top, max, root;
-    private static int[] toposort, maxArr, parent; //stack of toposorted vertices
+    private static int K, N, max, root;
+    private static int[] maxArr, parent; //max length of each node
     private static BitSet done = new BitSet();
     private static List<Box> stackOfBoxes;
     private static final String BLANK = " ";
@@ -170,7 +173,7 @@ public class StackingBoxes {
     		if(line.trim().equals("")) continue;
     		StringTokenizer st = new StringTokenizer(line.trim());
     		K = MyScanner.parseInt(st.nextToken()); N = MyScanner.parseInt(st.nextToken());
-    		toposort = new int[K]; top = -1; max = 0;
+    		max = 0;
     		maxArr = new int[K]; parent = new int[K];
     		stackOfBoxes = new ArrayList<Box>(K);
     		graph = new ArrayList<>();
@@ -201,13 +204,8 @@ public class StackingBoxes {
 					if(isNestable(d1, d2)) graph.get(b2.id).add(b1.id);
 				}
 			}
-			for(int i = 0; i<K; i++) //toposort
-    		{
-    			if(!done.get(i))
-    				dfs(i);
-    		}
-    		for(int i = top; i >= 0; i--) //relax each of the toposorted vertices
-    			relax(toposort[i]);
+    		for(int i = K-1; i >= 0; i--) //relax each of the sorted vertices
+    			relax(stackOfBoxes.get(i).id);
     		pw.println(max); //print length
     		print(root); //print stack of boxes
     		pw.println(); //new line
@@ -266,21 +264,5 @@ public class StackingBoxes {
     		return false;
     	}
     	return true;
-    }
-    
-    /**
-     * Dfs to toposort vertices
-     * @param i
-     */
-    private static void dfs(int i)
-    {
-    	done.set(i);
-    	List<Integer> children = graph.get(i);
-    	for(int c : children)
-    	{
-    		if(!done.get(c))
-    			dfs(c);
-    	}
-    	toposort[++top] = i; //push this to top of stack
     }
 }
