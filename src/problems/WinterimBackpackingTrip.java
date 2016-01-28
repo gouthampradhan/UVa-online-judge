@@ -7,6 +7,15 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.StringTokenizer;
 
+/**
+ * 
+ * @author gouthamvidyapradhan
+ * Accepted 0.169. Really struggled to understand the DP algorithm. When creating a graph using DP approach, I have to be more careful because the graph 
+ * is only imaginary and does not actually exists and hence the iteration of child nodes can be very tricky. 
+ * 
+ * The algorithm suggested in Felix Halim does not work, got TLE many times. This problem has to be solved from the finish node (N+1) and not from 0 
+ *
+ */
 public class WinterimBackpackingTrip {
 
     /**
@@ -46,15 +55,15 @@ public class WinterimBackpackingTrip {
             }
             return -1;
         }
-        
+
         /**
          * Ready
          * @return
          * @throws Exception
          */
-		public static boolean ready() throws Exception
+        public static boolean ready() throws Exception
         {
-        	return br.ready();
+            return br.ready();
         }
 
         /**
@@ -64,7 +73,7 @@ public class WinterimBackpackingTrip {
          */
         public static String readLine() throws Exception
         {
-        	return br.readLine();
+            return br.readLine();
         }
         /**
          * Parse to integer
@@ -88,7 +97,7 @@ public class WinterimBackpackingTrip {
                 num = num*10 + '0' - in.charAt( i++ );
             return sign * num;
         }
-        
+
         /**
          * Close BufferedReader
          *
@@ -100,57 +109,65 @@ public class WinterimBackpackingTrip {
     }
 
     private static PrintWriter pw = new PrintWriter(new BufferedOutputStream(System.out));
-    private static int[][] distance, min;
-    private static int[] dist;
-    private static int N, K, MAX_VALUE = Integer.MAX_VALUE;
-    
+    private static int[][] min = new int[310][610];
+    private static int[] input = new int[610], dist = new int[610];
+    private static int N, K;
+    private static final int MAX_VALUE = Integer.MAX_VALUE;
+
     /**
      * Main method
      * @param args
      */
-	public static void main(String[] args) throws Exception 
-	{
-		while(true)
-		{
-			while((N = MyScanner.readInt()) == -1);
-			if(N == -2) break;
-			K = MyScanner.readInt();
-			dist = new int[N+2]; distance = new int[N+2][N+2]; min = new int[N+2][K+2];
-			//accept input
-			for(int i=0; i<(N+1); i++)
-				dist[i] = MyScanner.readInt();
-			//construct the distance graph
-			for(int i = 0; i<(N+1); i++)
-				distance[i][i+1] = dist[i];
-			for(int i = 0; i<(N+1); i++)
-				for(int j = (i+1); j<(N+2); j++)
-					distance[i][j] = (distance[i][j-1] + distance[j-1][j]);
-			for(int i = 0; i<N+2; i++)
-				for(int j = 0; j<(K+2); j++)
-					min[i][j] = MAX_VALUE; //initialize with max value
-			pw.println(dfs(0, K+1));
-		}
-		pw.flush(); pw.close(); MyScanner.close(); 
-	}
-	
-	/**
-	 * Perform a dfs to fetch the min of maximum
-	 * @param cur current node being examined
-	 * @param n_left number of nights left
-	 * @return
-	 */
-	private static int dfs(int cur, int n_left)
-	{
-		if(n_left < 0) return MAX_VALUE; //invalid node, prune node
-		if(cur == N+1) return 0; //end of trail
-		if(min[cur][n_left] != MAX_VALUE) return min[cur][n_left]; //return if already evaluated the minimum
-		for(int i=(cur+1); i<=(N+1); i++)
-		{
-			int value = dfs(i, (n_left - 1));
-			int temp = (value > distance[cur][i]) ? value : distance[cur][i];
-			if(temp < min[cur][n_left])
-				min[cur][n_left] = temp;
-		}
-		return min[cur][n_left];
-	}
+    public static void main(String[] args) throws Exception
+    {
+        while(true)
+        {
+            while((N = MyScanner.readInt()) == -1);
+            if(N == -2) break;
+            K = MyScanner.readInt();
+            int minVal = -1;
+            //construct the distance graph
+            for(int i = 0; i<=K+1; i++)
+                for(int j = 0; j<=N+1; j++)
+                    min[i][j] = MAX_VALUE; //initialize with max value
+            //accept input
+            for(int i=1; i<=N+1; i++)
+            {
+                int in = MyScanner.readInt();
+                input[i] = in; //input array
+                dist[i] = dist[i-1] + in;//sum of distances
+                min[1][i] = dist[i]; //sum up the minimum
+                minVal = Math.max(minVal, in); //maintain a minimum
+            }
+            if(K == 0)
+                pw.println(dist[N+1]);
+            else if(K > N)
+                pw.println(minVal);
+            else
+            	pw.println(dp(N+1, K+1));
+        }
+        pw.flush(); pw.close(); MyScanner.close();
+    }
+
+    /**
+     * Perform a recursive dp to fetch the min of maximum
+     * @param n current node being examined
+     * @param k number of nights left
+     * @return Min of Max value
+     */
+    private static int dp(int n, int k)
+    {
+        if(min[k][n] != MAX_VALUE) return min[k][n];
+        else
+        {
+            for(int i = n-1; i >= k-1; i--) // i >= k-1 very important. Does not work with i > 0 
+            	//because it will actually iterate through all the child nodes which is not necessary
+            {
+                int temp = Math.max(dp(i, k-1), dist[n] - dist[i]);
+                if(temp < min[k][n])
+                    min[k][n] = temp;
+            }
+        }
+        return min[k][n];
+    }
 }
