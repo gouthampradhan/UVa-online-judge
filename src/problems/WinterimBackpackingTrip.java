@@ -110,6 +110,7 @@ public class WinterimBackpackingTrip {
 
     private static PrintWriter pw = new PrintWriter(new BufferedOutputStream(System.out));
     private static int[][] min = new int[310][610];
+    private static boolean[][] done = new boolean[310][610];
     private static int[] input = new int[610], dist = new int[610];
     private static int N, K;
     private static final int MAX_VALUE = Integer.MAX_VALUE;
@@ -129,14 +130,15 @@ public class WinterimBackpackingTrip {
             //construct the distance graph
             for(int i = 0; i<=K+1; i++)
                 for(int j = 0; j<=N+1; j++)
-                    min[i][j] = MAX_VALUE; //initialize with max value
+                    {min[i][j] = MAX_VALUE; done[i][j] = false;} //initialize with max value
             //accept input
             for(int i=1; i<=N+1; i++)
             {
                 int in = MyScanner.readInt();
                 input[i] = in; //input array
                 dist[i] = dist[i-1] + in;//sum of distances
-                min[1][i] = dist[i]; //sum up the minimum
+                min[1][i] = dist[i]; //sum up the minimum. This is the final node, can't go beyond this.
+                done[1][i] = true; // mark this as finished. This is the final node, can't go beyond this.
                 minVal = Math.max(minVal, in); //maintain a minimum
             }
             if(K == 0)
@@ -157,9 +159,10 @@ public class WinterimBackpackingTrip {
      */
     private static int dp(int n, int k)
     {
-        if(min[k][n] != MAX_VALUE) return min[k][n];
+        if(done[k][n]) return min[k][n];
         else
         {
+        	done[k][n] = true;
             for(int i = n-1; i >= k-1; i--) // i >= k-1 very important. Does not work with i > 0 
             	//because it will actually iterate through all the child nodes which is not necessary
             {

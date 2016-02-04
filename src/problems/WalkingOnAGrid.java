@@ -12,6 +12,9 @@ import java.util.StringTokenizer;
  * @author gouthamvidyapradhan
  * Accepted 2.452 !! I, Definitely need to work on DP algorithm skills. Really struggled to understand the algorithm. Trick is to perform a forward 
  * recursive addition until N is reached. 
+ * 
+ * Accepted 0.118 s !!! Fastest in Java. What a great feeling of having solved the problem finally with my approach. The key was to use a boolean flag 
+ * called verified, if this is not used then the same vertex is reexamined which results in TLE.
  *
  */
 public class WalkingOnAGrid {
@@ -110,11 +113,12 @@ public class WalkingOnAGrid {
     private static int[][] grid = new int[80][80]; //max is 75
     private static long[] max = new long[309623];
     private static boolean[][] done = new boolean[80][80]; //max is 75
+    private static boolean[] verified;
     private static int N, K, count;
     private static long result;
     private static final int MIN_VALUE = Integer.MIN_VALUE;
     private static final String CASE = "Case ", BLANK = ": ", IMPOSSIBLE = "impossible";
-    private static final int R[] = {1, 0, 0};
+    private static final int R[] = {-1, 0, 0};
     private static final int C[] = {0, 1, -1};
 
     /**
@@ -131,6 +135,7 @@ public class WalkingOnAGrid {
 			K = MyScanner.readInt();
 			if(N == 0 && K == 0) break;
 			result = Integer.MIN_VALUE; //initialize result with min value
+			verified = new boolean[309623];
 			for(int i = 0; i<N; i++)
 			{
 				for(int j = 0; j<N; j++)
@@ -147,8 +152,11 @@ public class WalkingOnAGrid {
 					}
 				}
 			}
-			if(grid[0][0] < 0) K--;
-			dp(0, 0, K, 0, grid[0][0]); //invoke dp algorithm
+			for(int i = 0; i<=K; i++)
+				for(int j = 0; j<3; j++)
+					{max[(i << 2) + j] = grid[0][0]; verified[(i << 2) + j] = true;}
+			if(grid[N-1][N-1] < 0) K--;
+			result = dp(N-1, N-1, K, 0); //invoke dp algorithm
 			pw.print(CASE + ++count + BLANK); 
 			if(result != Integer.MIN_VALUE)
 				pw.println(result);
@@ -159,41 +167,36 @@ public class WalkingOnAGrid {
 	}
 	
 	/**
-	 * DP algorithm to find the max. Performs a forward addition until the destination is reached. Once the destination is reached 
-	 * checks for new maximum and replaces the old maximum if necessary
+	 * DP algorithm to find the max. Perform a recursive check until a valid value is found and marks each visited vertex as verified. (so that once again 
+	 * the same vertex is not evaluated).
 	 * @param r Row
 	 * @param c Column
 	 * @param k K
 	 * @param d Direction (from top, left and right)
 	 * @param sum total sum
 	 */
-	private static void dp(int r, int c, int k, int d, int sum)
-	{ 
-		if(k < 0) return; //invalid state
-		if(r == N-1 && c == N-1) {result = Math.max(result, sum); return;}
-		done[r][c] = true;
+	private static long dp(int r, int c, int k, int d)
+	{
+		if(k < 0) return MIN_VALUE;
+		int encode = (((((r << 7) + c) << 3) + k) << 2) + d;
+		if(verified[encode]) return max[encode];
+		done[r][c] = true; verified[encode] = true; //***This is very important. If verified is not set then the same vertex is revisited and analyzed again.
 		for(int i = 0; i< 3; i++)
 		{
 			int nr = r + R[i];
 			int nc = c + C[i];
 			if(nr < 0 || nc < 0 || nr >= N || nc >= N || done[nr][nc]) continue;
-			int temp = grid[nr][nc] + sum;
-			int encode = ((nr << 7) + nc) << 3;
+			long temp;
 			if(grid[nr][nc] < 0)
-			{
-				if(temp > max[((encode + k-1) << 2) + i]) // *** Very important. 
-					//If this condition is not added then there will be repeated check for the same vertex
-				{
-					max[((encode + k-1) << 2) + i] = temp;
-					dp(nr, nc, k - 1, i, temp);
-				}
-			}
-			else if(temp > max[((encode + k) << 2) + i])
-			{
-				max[((encode + k) << 2) + i] = temp;
-				dp(nr, nc, k, i, temp);
-			}
-		}
+				temp = dp(nr, nc, k-1, i);
+			else 
+				temp = dp(nr, nc, k, i);
+			if(temp != MIN_VALUE)
+				temp += grid[r][c];
+			if(temp > max[encode])
+				max[encode] = temp;
+		}	
 		done[r][c] = false;
+		return max[encode];
 	}
 }
