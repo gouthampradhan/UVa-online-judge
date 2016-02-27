@@ -12,6 +12,7 @@ import java.util.*;
  * 
  * @author gouthamvidyapradhan
  * Accepted 0.352s. Simple Floyd-Warshall's algorithm. 
+ * Accepted 0.252s : Some simple optimization while printing and avoiding type casting in O(NX3) loop.
  *
  */
 public class PageHopping {
@@ -111,7 +112,7 @@ public class PageHopping {
     private static int u1, v1, u2, v2, N, u, v, w;
     private static double sum;
     private static Set<Integer> nodeSet = new HashSet<>(); //maintain a set of unique nodes
-    private static Object[] nodes;
+    private static int[] nodes;
     private static final String CASE = "Case ";
     private static final String AVERAGE_LENGTH = ": average length between pages = ";
     private static final String CLICKS = " clicks";
@@ -140,13 +141,16 @@ public class PageHopping {
                 graph[u2][v2] = 1;
                 nodeSet.add(u2); nodeSet.add(v2);
             }
-            nodes = nodeSet.toArray();
-            N = nodes.length;
+            Object[] temp = nodeSet.toArray();
+            N = temp.length;
+            nodes = new int[N];
+            for(int i = 0; i < N; i++)
+            	nodes[i] = (int)temp[i]; //copy to simple array
             apsp(); //invoke all pair shortest path
             sum = 0; int edges = N * (N - 1);
-            for(int i = 1; i <= 100; i++)
-            	for(int j = 1; j<= 100; j++)
-            			sum += graph[i][j];
+            for(int i = 0; i < N; i++)
+            	for(int j = 0; j < N; j++)
+            			sum += graph[nodes[i]][nodes[j]];
             pw.println(CASE + ++count + AVERAGE_LENGTH + format.format(sum / edges) + CLICKS);
             nodeSet.clear();
         }
@@ -160,13 +164,13 @@ public class PageHopping {
     {
         for(int i = 0; i < N; i++)
         {  
-        	w = (int)nodes[i];
+        	w = nodes[i];
             for(int j = 0; j < N; j++) 
             {
-            	u = (int)nodes[j];
+            	u = nodes[j];
                 for (int k = 0; k < N; k++)
                 {
-                	v = (int)nodes[k];
+                	v = nodes[k];
                 	if(u == v) continue; 
                 	else if((graph[u][w] == 0) || graph[w][v] == 0) continue; //no alternate route available.
                 	else if(graph[u][v] == 0) graph[u][v] = graph[u][w] + graph[w][v]; //alternate route is the best route.
