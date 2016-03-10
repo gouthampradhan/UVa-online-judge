@@ -12,7 +12,7 @@ import java.util.StringTokenizer;
 /**
  * 
  * @author gouthamvidyapradhan
- * Accepted 1.229 s. O(N^3) algorithm to count all the permutation and combination of throws
+ * Accepted 1.072 s. O(N^3) algorithm to count all the permutation and combination of throws
  *
  */
 public class DartAMania {
@@ -132,8 +132,8 @@ public class DartAMania {
 			int N = D.length, encode;
 			pCount = 0; cCount = 0;
 			for(int i = 0; (i < N && D[i] <= S); i++)
-				for(int j = 0; (j < N && D[j] <= S); j++)
-					for(int k = 0; (k < N && D[k] <= S); k++)
+				for(int j = 0; (j < N && (D[j] + D[i]) <= S); j++)
+					for(int k = 0; (k < N && (D[j] + D[i] + D[k]) <= S); k++)
 					{
 						if((D[i] + D[j] + D[k]) == S)
 						{
