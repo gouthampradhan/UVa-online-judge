@@ -12,7 +12,7 @@ import java.util.StringTokenizer;
 /**
  * 
  * @author gouthamvidyapradhan
- * Accepted 1.245 s. O(N^3) algorithm to count all the permutation and combination of throws
+ * Accepted 1.229 s. O(N^3) algorithm to count all the permutation and combination of throws
  *
  */
 public class DartAMania {
@@ -111,8 +111,8 @@ public class DartAMania {
     private static int S, pCount, cCount; //permutation, combination count
     private static int[] cArray = new int[3];
     private static BitSet done = new BitSet();
-    private static final int[] D = {0, 1, 2, 3, 4, 5, 6, 7, 21, 8, 24, 
-    	9, 27, 10, 30, 11, 22, 33, 12, 36, 13, 26, 39, 14, 28, 42, 15, 45, 16, 32, 48, 17, 34, 51, 18, 54, 19, 38, 57, 50, 20, 40, 60};
+    private static final int[] D = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 
+    	24, 26, 27, 28, 30, 32, 33, 34, 36, 38, 39, 40, 42, 45, 48, 50, 51, 54, 57, 60};    
     private static final String NOT_POSSIBLE1 = "THE SCORE OF ", NOT_POSSIBLE2 = " CANNOT BE MADE WITH THREE DARTS.", 
     		LINE = "**********************************************************************", PERMUTATION = "NUMBER OF PERMUTATIONS THAT SCORES ", 
     				COMBINATION = "NUMBER OF COMBINATIONS THAT SCORES ", IS = " IS ", STOP = ".", END_OUTPUT = "END OF OUTPUT";
@@ -131,9 +131,9 @@ public class DartAMania {
 			if(S <= 0) break;
 			int N = D.length, encode;
 			pCount = 0; cCount = 0;
-			for(int i = 0; i < N; i++)
-				for(int j = 0; j < N; j++)
-					for(int k = 0; k < N; k++)
+			for(int i = 0; (i < N && D[i] <= S); i++)
+				for(int j = 0; (j < N && D[j] <= S); j++)
+					for(int k = 0; (k < N && D[k] <= S); k++)
 					{
 						if((D[i] + D[j] + D[k]) == S)
 						{
