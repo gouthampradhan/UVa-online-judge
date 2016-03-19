@@ -1,19 +1,22 @@
-package problems.completesearch;
+package problems.codeforces;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.util.ArrayDeque;
+import java.util.Queue;
 import java.util.StringTokenizer;
 
 /**
  * 
  * @author gouthamvidyapradhan
+ * Accepted CodeForces 202ms.
  *
  */
-public class ParliamentOfBerland {
-
+public class ProcessingQueries 
+{
     /**
      * Scanner class
      *
@@ -105,47 +108,100 @@ public class ParliamentOfBerland {
     }
 
     private static PrintWriter pw = new PrintWriter(new BufferedOutputStream(System.out, 500000)); //set the buffer too high.
-    private static int N, a, b;
-    private static int[][] P;
+    private static int N, b;
+    private static long serverFreeAt; //time when the server is next available.
+    private static long[] done;
+    private static Job[] todo; 
+    private static Queue<Job> queue = new ArrayDeque<Job>(200002);
     private static final String BLANK = " ";
+
+
     /**
-     * 
+     * Job class
+     * @author gouthamvidyapradhan
+     *
+     */
+    private static class Job
+    {
+        int i, t, d;
+        Job(int i, int t, int d)
+        {
+            this.i = i;
+            this.t = t;
+            this.d = d;
+        }
+    }
+
+
+    /**
+     * Main method
      * @param args
      */
-	public static void main(String[] args) throws Exception 
-	{
-		N = MyScanner.readInt();
-		a = MyScanner.readInt();
-		b = MyScanner.readInt();
-		int count = 1;
-		P = new int[a][b];
-		if(N > (a * b)) pw.println(-1);
-		else
-		{
-			for(int i = 0; (i < a) && (count - 1) < N; i++)
-			{
-				if((i % 2) == 0)
-				{
-					for(int j = 0; (j < b && (count - 1) < N); j++)
-						P[i][j] = count++; //place a parliamentarian
-				}
-				else
-				{
-					for(int j = (b - 1); (j >= 0 && (count - 1) < N); j--)
-						P[i][j] = count++;
-				}
-			}
-			for(int i = 0; i < a; i++)
-			{
-				for(int j = 0; j < b; j++)
-				{
-					if(j > 0)
-						pw.print(BLANK);
-					pw.print(P[i][j]);
-				}
-				pw.println();
-			}
-		}
-		pw.flush(); pw.close(); MyScanner.close();
-	}
+    public static void main(String[] args) throws Exception
+    {
+        N = MyScanner.readInt();
+        b = MyScanner.readInt();
+        todo = new Job[N];
+        done = new long[N + 1];
+        for(int i = 0; i < N; i++)
+            todo[i] = new Job(i + 1, MyScanner.readInt(), MyScanner.readInt());
+
+        serverFreeAt = 0;
+        for(Job j : todo)
+            consume(j);
+        while(!queue.isEmpty())
+        {
+        	Job j = queue.remove();
+            serverFreeAt += j.d;
+            done[j.i] = serverFreeAt;
+        }
+        for(int i = 1; i <= N; i++)
+        {
+            if(i > 1)
+                pw.print(BLANK);
+            pw.print(done[i]);
+        }
+        pw.println();
+        pw.flush(); pw.close(); MyScanner.close();
+    }
+
+    /**
+     * Consume jobs
+     */
+    private static void consume(Job job)
+    {
+        if(serverFreeAt <= job.t)
+        {
+        	if(queue.isEmpty())
+            {
+            	serverFreeAt = job.t + job.d; 
+                done[job.i] = serverFreeAt;
+            }
+            else
+            {
+            	while(!queue.isEmpty())
+                {
+            		Job j = queue.remove();
+                    serverFreeAt += j.d;
+                    done[j.i] = serverFreeAt;
+                    if(serverFreeAt > job.t)
+                    {
+                    	queue.add(job);
+                        break;
+                    }
+                }
+            	if(queue.isEmpty())
+                {
+                	serverFreeAt = job.t + job.d; 
+                    done[job.i] = serverFreeAt;
+                }
+            }
+        }
+        else
+        {
+        	if(queue.size() < b)
+            	queue.add(job);
+            else done[job.i] = -1; //queue full
+        }
+    }
 }
