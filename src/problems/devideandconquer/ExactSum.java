@@ -1,4 +1,4 @@
-package problems.completesearch;
+package problems.devideandconquer;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
