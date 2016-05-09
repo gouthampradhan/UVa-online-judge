@@ -11,7 +11,7 @@ import java.util.StringTokenizer;
  * 
  * @author gouthamvidyapradhan
  * Accepted 0.280. Simple DP similar to WeddingShopping
- * Worst case algorithm complexity O(N ^ 3)
+ * Algorithm complexity O(N ^ 3)
  *
  */
 public class HowDoYouAdd {
