@@ -8,7 +8,7 @@ import java.io.PrintWriter;
 import java.util.StringTokenizer;
 
 /**
- * 
+ *    
  * @author gouthamvidyapradhan
  * Accepted 0.040 s.  Binary search the answer
  * MyAlgorithm O(n log n) - Worst case = > 1000 x log 199000000
