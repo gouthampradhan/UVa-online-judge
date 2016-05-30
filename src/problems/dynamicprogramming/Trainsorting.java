@@ -10,7 +10,7 @@ import java.util.StringTokenizer;
  * Have to be careful with forloops and not re-calculate the values for repeated overlapping subproblems
  * O(N ^ 2)
  */
-class Main
+public class Trainsorting
 {
     /**
      * Scanner class
