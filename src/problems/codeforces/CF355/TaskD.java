@@ -5,8 +5,7 @@ import java.io.PrintWriter;
 import java.util.*;
 
 /**
- * Accepted 1.216 s. Very challenging SSSP, hard to run this within Time Limit.
- *
+ * Accepted 1.216 s. Challenging SSSP, very hard to beat the TimeLimit
  */
 public class TaskD
 {
@@ -48,51 +47,46 @@ public class TaskD
         color = new HashMap<>();
         sorted = new ArrayList<>();
         int pr = 0, pc = 0;
-        for(int i = 0; i < N; i ++ )
+        for (int i = 0; i < N; i++)
             Arrays.fill(DP[i], Integer.MAX_VALUE);
 
-        for(int i = 0; i < N; i++)
-            for(int j = 0; j < M; j++)
-            {
+        for (int i = 0; i < N; i++)
+            for (int j = 0; j < M; j++) {
                 palace[i][j] = in.nextInt();
-                List<Cell> list = color.get(palace[i][j]);
-                if(list == null)
+                List<TaskD.Cell> list = color.get(palace[i][j]);
+                if (list == null)
                     list = new ArrayList<>();
-                list.add(new Cell(i, j));
+                list.add(new TaskD.Cell(i, j));
                 color.put(palace[i][j], list);
-                if(palace[i][j] == 1)
+                if (palace[i][j] == 1)
                     DP[i][j] = i + j;
-                if(palace[i][j] == P)
-                {
-                    pr = i; pc = j; //store the dest row, col
+                if (palace[i][j] == P) {
+                    pr = i;
+                    pc = j; //store the dest row, col
                 }
             }
 
         q = new int[N * M];
-        for(int i = 1; i < P; i++)
-        {
-            List<Cell> source = color.get(i);
-            List<Cell> dest = color.get(i + 1);
+        for (int i = 1; i < P; i++) {
+            List<TaskD.Cell> source = color.get(i);
+            List<TaskD.Cell> dest = color.get(i + 1);
             int sourceCnt = source.size();
             int destCnt = dest.size();
-            if(sourceCnt * destCnt <= N * M * 10)
-            {
-                for(Cell s : source)
-                    for(Cell d : dest)
+            if (sourceCnt * destCnt <= N * M * 2) {
+                for (TaskD.Cell s : source)
+                    for (TaskD.Cell d : dest)
                         DP[d.r][d.c] = Math.min(DP[d.r][d.c], DP[s.r][s.c] + Math.abs(d.r - s.r) + Math.abs(d.c - s.c));
-            }
-            else
-            {
-                h = 0; t = 0;
+            } else {
+                h = 0;
+                t = 0;
                 done.clear();
                 sorted.clear();
-                for (Cell s : source)
-                {
+                for (TaskD.Cell s : source) {
                     s.distance = DP[s.r][s.c];
                     sorted.add(s);
                 }
                 Collections.sort(sorted, (o1, o2) -> Integer.compare(o1.distance, o2.distance));
-                Cell first = sorted.get(0);
+                TaskD.Cell first = sorted.get(0);
                 q[t++] = (first.r << 9) + first.c;
                 tempDP[first.r][first.c] = first.distance;
                 done.set((first.r << 9) + first.c);
@@ -110,36 +104,31 @@ public class TaskD
     private static void bfs(int dest, int sourceCnt, int destCnt)
     {
         int dCnt = 0;
-        while(h < t && dCnt < destCnt)
-        {
+        while (h < t && dCnt < destCnt) {
             int cell = q[h++];
             int r = cell >> 9;
             int c = cell & CONST;
 
-            while((currIndex < sourceCnt)
+            while ((currIndex < sourceCnt)
                     && (sorted.get(currIndex).distance == tempDP[r][c]))
 
             {
-                Cell curr = sorted.get(currIndex++);
+                TaskD.Cell curr = sorted.get(currIndex++);
                 int rowCol = (curr.r << 9) + curr.c;
-                if(!done.get(rowCol))
-                {
+                if (!done.get(rowCol)) {
                     q[t++] = rowCol;
                     done.set(rowCol);
                     tempDP[curr.r][curr.c] = curr.distance;
                 }
             }
 
-            for(int i = 0; i < 8; i += 2)
-            {
+            for (int i = 0; i < 8; i += 2) {
                 int newR = r + I[i];
                 int newC = c + I[i + 1];
-                if(newR >= 0 && newC >= 0 && newR < N && newC < M && !done.get((newR << 9) + newC) )
-                {
+                if (newR >= 0 && newC >= 0 && newR < N && newC < M && !done.get((newR << 9) + newC)) {
                     int newRC = (newR << 9) + newC;
                     done.set(newRC);
-                    if(palace[newR][newC] == dest)
-                    {
+                    if (palace[newR][newC] == dest) {
                         DP[newR][newC] = tempDP[r][c] + 1;
                         ++dCnt;
                     }
@@ -148,6 +137,5 @@ public class TaskD
                 }
             }
         }
-
     }
 }
