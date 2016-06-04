@@ -1,0 +1,39 @@
+19 C - Vanya and Label
+6 SINGLE
+8 STANDARD
+-1
+8 STANDARD
+-1
+3
+0
+2 z
+
+2 3
+
+1
+1
+4 V_V
+
+2 9
+
+1
+2
+11 Codeforces
+
+10 130653412
+
+1
+38 TopCoder/src/problems/codeforces/CF355
+8 -Xmx256M
+4 Main
+31 problems.codeforces.CF355.TaskC
+39 net.egork.chelper.checkers.TokenChecker
+0 
+0
+10 2016.06.01
+30 Codeforces Round #355 (Div. 2)
+1
+35 problems.codeforces.CF353.MyScanner
+19 java.io.PrintWriter
+0
+0
