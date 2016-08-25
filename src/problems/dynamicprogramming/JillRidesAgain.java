@@ -1,4 +1,4 @@
-package problems.devideandconquer;
+package problems.dynamicprogramming;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -8,13 +8,12 @@ import java.io.PrintWriter;
 import java.util.StringTokenizer;
 
 /**
- *    
+ * 
  * @author gouthamvidyapradhan
- * Accepted 0.040 s.  Binary search the answer
- * MyAlgorithm O(n log n) - Worst case = > 1000 x log 199000000
+ * Accepted 0.320 s. Simple max 1D range sum DP problem.
  *
  */
-public class FillTheContainers {
+public class JillRidesAgain {
 
     /**
      * Scanner class
@@ -121,110 +120,59 @@ public class FillTheContainers {
     }
 
     private static PrintWriter pw = new PrintWriter(new BufferedOutputStream(System.out, 1000000));
-    private static int min, max, fill, N, M, conCnt;
-    private static int[] A;
-
-    /**
-     * Status of each check
-     * @author gouthamvidyapradhan
-     *
-     */
-    private static enum Status
-    {
-    	LOW,
-    	HIGH,
-    	CORRECT;
-    }
+    private static int T, B;
+    private static int[] R;
+    private static final String NICE_PARTS = "The nicest part of route ";
+    private static final String IS = " is between stops ";
+    private static final String NO_NICEPARTS = " has no nice parts";
     /**
      * Main method
      * @param args
      * @throws Exception
      */
-	public static void main(String[] args)  throws Exception  
+	public static void main(String[] args)   throws Exception  
 	{
-		while(true)
+		T = MyScanner.readInt();
+		int count = 0;
+		while(T-- > 0)
 		{
-			while((N = MyScanner.readInt()) == -1);
-			if(N == -2) break;
-			M = MyScanner.readInt();
-			A = new int[N];
-			int temp, sum = 0, high = Integer.MIN_VALUE;
-			for(int i = 0; i < N; i++)
+			while((B = MyScanner.readInt()) == -1);
+			R = new int[B];
+			for(int i = 1; i < B; i++)
+				R[i] = MyScanner.readInt();
+			int max = 0, sum = 0, si = 0, ei = 0, S = 0, E = 0;
+			for(int i = 1; i < B; i++)
 			{
-				temp = MyScanner.readInt();
-				high = Math.max(high, temp);
-				sum += temp;
-				A[i] = temp;
-			}
-			min = Integer.MAX_VALUE; 
-			if(M < N)
-			{
-				int l = high, h = sum, m;
-				while(l < h - 1)
+				sum += R[i];
+				if(si == 0 && ei == 0) 
 				{
-					m = (l + h) / 2;
-					Status status = check(m);
-					switch(status)
+					si = i;
+					ei = si + 1;
+				}
+				else ei++;
+				if(sum > max)
+				{
+					max = sum;
+					S = si; E = ei;
+				}
+				else if(sum == max && sum != 0)
+				{
+					if((ei - si) > (E - S))
 					{
-						case LOW:
-								l = m;
-								break;
-								
-						case HIGH:
-								h = m;
-								break;
-								
-						case CORRECT:
-								min = Math.min(min, m);
-								h = m; //explore next lower value
-								break;
+						S = si; E = ei;
 					}
 				}
-				if(l == h - 1)
+				else if(sum < 0) 
 				{
-					Status status;
-					status = check(l);
-					if(status == Status.CORRECT)
-						min = Math.min(min, l);
-					status = check(h);
-					if(status == Status.CORRECT)
-						min = Math.min(min, h);
+					sum = 0;
+					si = 0; 
+					ei = 0;
 				}
-				pw.println(min);
 			}
-			else
-				pw.println(high);
+			if(S > 0 && E > 0)
+				pw.println(NICE_PARTS + ++count + IS + S + " and " + E);
+			else pw.println("Route " + ++count + NO_NICEPARTS);
 		}
 		pw.flush(); pw.close(); MyScanner.close();
-	}
-	
-	/**
-	 * Check if the answer fits
-	 * @param ans
-	 * @return
-	 */
-	private static Status check(int ans)
-	{
-		conCnt = M; fill = 0;
-		max = Integer.MIN_VALUE;
-		for(int i = 0; i < N ; i++)
-		{
-			if(conCnt == 0)
-				return Status.LOW;
-			int a = A[i];
-			if((fill + a) > ans)
-			{
-				if(--conCnt == 0)
-					return Status.LOW;
-				max = Math.max(max, fill);
-				fill = a;
-			}
-			else
-				fill += a;
-		}
-		conCnt--; // do the filling for the last container. There can be containers left over but don't care about it.
-		max = Math.max(max, fill);
-		if(max == ans) return Status.CORRECT;
-		else return Status.HIGH;
 	}
 }

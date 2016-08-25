@@ -1,20 +1,21 @@
-package problems.devideandconquer;
+package problems.codeforces;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.util.StringTokenizer;
+import java.util.*;
 
 /**
- *    
+ * 
  * @author gouthamvidyapradhan
- * Accepted 0.040 s.  Binary search the answer
- * MyAlgorithm O(n log n) - Worst case = > 1000 x log 199000000
+ * Accepted 256 ms. Very good problem with binary search. 
+ * Good learning for me as part of binary search problems.
+ * Worst case complexity. O(N log 10 ^ 9)
  *
  */
-public class FillTheContainers {
+public class RobinHood {
 
     /**
      * Scanner class
@@ -121,110 +122,89 @@ public class FillTheContainers {
     }
 
     private static PrintWriter pw = new PrintWriter(new BufferedOutputStream(System.out, 1000000));
-    private static int min, max, fill, N, M, conCnt;
-    private static int[] A;
-
-    /**
-     * Status of each check
-     * @author gouthamvidyapradhan
-     *
-     */
-    private static enum Status
-    {
-    	LOW,
-    	HIGH,
-    	CORRECT;
-    }
+    private static int[] T;
+    private static int N, K;
+    
     /**
      * Main method
      * @param args
      * @throws Exception
      */
-	public static void main(String[] args)  throws Exception  
+	public static void main(String[] args)  throws Exception 
 	{
-		while(true)
+		N = MyScanner.readInt();
+		K = MyScanner.readInt();
+		T = new int[N];
+		for(int i = 0; i < N; i++)
+			T[i] = MyScanner.readInt();
+		int low = 0, high = 0;
+		int l = 0, h = (int)1e9 + 1, m;
+		while(l <= h)
 		{
-			while((N = MyScanner.readInt()) == -1);
-			if(N == -2) break;
-			M = MyScanner.readInt();
-			A = new int[N];
-			int temp, sum = 0, high = Integer.MIN_VALUE;
-			for(int i = 0; i < N; i++)
+			m = (l + h) / 2;
+			if(checkLow(m))
 			{
-				temp = MyScanner.readInt();
-				high = Math.max(high, temp);
-				sum += temp;
-				A[i] = temp;
+				low = m;
+				l = m + 1;
 			}
-			min = Integer.MAX_VALUE; 
-			if(M < N)
-			{
-				int l = high, h = sum, m;
-				while(l < h - 1)
-				{
-					m = (l + h) / 2;
-					Status status = check(m);
-					switch(status)
-					{
-						case LOW:
-								l = m;
-								break;
-								
-						case HIGH:
-								h = m;
-								break;
-								
-						case CORRECT:
-								min = Math.min(min, m);
-								h = m; //explore next lower value
-								break;
-					}
-				}
-				if(l == h - 1)
-				{
-					Status status;
-					status = check(l);
-					if(status == Status.CORRECT)
-						min = Math.min(min, l);
-					status = check(h);
-					if(status == Status.CORRECT)
-						min = Math.min(min, h);
-				}
-				pw.println(min);
-			}
-			else
-				pw.println(high);
+			else h = m - 1;
 		}
-		pw.flush(); pw.close(); MyScanner.close();
+		l = 0; h = (int)1e9 + 1;
+		while(l <= h)
+		{
+			m = (l + h) / 2;
+			if(checkHigh(m))
+			{
+				high = m;
+				h = m - 1;
+			}
+			else l = m + 1;
+		}
+		if(high > low)
+			pw.println(high - low);
+		else 
+		{
+			//given K is very high. So check if we can share the coins completely to maximum share possible
+			long temp = 0;
+			for(int i = 0; i < N; i++)
+				temp += T[i];
+			pw.println(((temp % N) == 0) ? 0 : 1);
+		}
+		pw.flush();
+		pw.close();
+		MyScanner.close();
 	}
 	
 	/**
-	 * Check if the answer fits
-	 * @param ans
+	 * Check low possible
+	 * @param p
 	 * @return
 	 */
-	private static Status check(int ans)
+	private static boolean checkLow(int p)
 	{
-		conCnt = M; fill = 0;
-		max = Integer.MIN_VALUE;
-		for(int i = 0; i < N ; i++)
+		long sum = 0;
+		for(int i = 0; i < N; i++)
 		{
-			if(conCnt == 0)
-				return Status.LOW;
-			int a = A[i];
-			if((fill + a) > ans)
-			{
-				if(--conCnt == 0)
-					return Status.LOW;
-				max = Math.max(max, fill);
-				fill = a;
-			}
-			else
-				fill += a;
+			if(p > T[i])
+				sum += p - T[i];
 		}
-		conCnt--; // do the filling for the last container. There can be containers left over but don't care about it.
-		max = Math.max(max, fill);
-		if(max == ans) return Status.CORRECT;
-		else return Status.HIGH;
+		return (sum <= K);
 	}
+	
+	/**
+	 * Check high possible
+	 * @param p
+	 * @return
+	 */
+	private static boolean checkHigh(int p)
+	{
+		long sum = 0;
+		for(int i = 0; i < N; i++)
+		{
+			if(T[i] > p)
+				sum += T[i] - p;
+		}
+		return (sum <= K);
+	}
+
 }

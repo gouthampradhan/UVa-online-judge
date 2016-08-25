@@ -1,21 +1,17 @@
-package problems.devideandconquer;
+package problems.dynamicprogramming;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
+import java.util.Arrays;
 import java.util.StringTokenizer;
 
 /**
- *    
- * @author gouthamvidyapradhan
- * Accepted 0.040 s.  Binary search the answer
- * MyAlgorithm O(n log n) - Worst case = > 1000 x log 199000000
- *
+ * Created by gouthamvidyapradhan on 29/05/2016.
+ * Accepted 0.300 s. Simple LIS DP, struggled a bit on LIS implementation.
+ * Have to be careful with forloops and not re-calculate the values for repeated overlapping subproblems
+ * O(N ^ 2)
  */
-public class FillTheContainers {
-
+public class Trainsorting
+{
     /**
      * Scanner class
      *
@@ -121,110 +117,93 @@ public class FillTheContainers {
     }
 
     private static PrintWriter pw = new PrintWriter(new BufferedOutputStream(System.out, 1000000));
-    private static int min, max, fill, N, M, conCnt;
-    private static int[] A;
+    private static int T, N, max;
+    private static int[] C;
+    private static int[][] DP;
 
-    /**
-     * Status of each check
-     * @author gouthamvidyapradhan
-     *
-     */
-    private static enum Status
-    {
-    	LOW,
-    	HIGH,
-    	CORRECT;
-    }
     /**
      * Main method
      * @param args
      * @throws Exception
      */
-	public static void main(String[] args)  throws Exception  
-	{
-		while(true)
-		{
-			while((N = MyScanner.readInt()) == -1);
-			if(N == -2) break;
-			M = MyScanner.readInt();
-			A = new int[N];
-			int temp, sum = 0, high = Integer.MIN_VALUE;
-			for(int i = 0; i < N; i++)
-			{
-				temp = MyScanner.readInt();
-				high = Math.max(high, temp);
-				sum += temp;
-				A[i] = temp;
-			}
-			min = Integer.MAX_VALUE; 
-			if(M < N)
-			{
-				int l = high, h = sum, m;
-				while(l < h - 1)
-				{
-					m = (l + h) / 2;
-					Status status = check(m);
-					switch(status)
-					{
-						case LOW:
-								l = m;
-								break;
-								
-						case HIGH:
-								h = m;
-								break;
-								
-						case CORRECT:
-								min = Math.min(min, m);
-								h = m; //explore next lower value
-								break;
-					}
-				}
-				if(l == h - 1)
-				{
-					Status status;
-					status = check(l);
-					if(status == Status.CORRECT)
-						min = Math.min(min, l);
-					status = check(h);
-					if(status == Status.CORRECT)
-						min = Math.min(min, h);
-				}
-				pw.println(min);
-			}
-			else
-				pw.println(high);
-		}
-		pw.flush(); pw.close(); MyScanner.close();
-	}
-	
-	/**
-	 * Check if the answer fits
-	 * @param ans
-	 * @return
-	 */
-	private static Status check(int ans)
-	{
-		conCnt = M; fill = 0;
-		max = Integer.MIN_VALUE;
-		for(int i = 0; i < N ; i++)
-		{
-			if(conCnt == 0)
-				return Status.LOW;
-			int a = A[i];
-			if((fill + a) > ans)
-			{
-				if(--conCnt == 0)
-					return Status.LOW;
-				max = Math.max(max, fill);
-				fill = a;
-			}
-			else
-				fill += a;
-		}
-		conCnt--; // do the filling for the last container. There can be containers left over but don't care about it.
-		max = Math.max(max, fill);
-		if(max == ans) return Status.CORRECT;
-		else return Status.HIGH;
-	}
+    public static void main(String[] args) throws Exception
+    {
+        T = MyScanner.readInt();
+        while(T-- > 0)
+        {
+            while((N = MyScanner.readInt()) == -1);
+            if(N == 0)
+            {
+                pw.println(0);
+                continue;
+            }
+            C = new int[N];
+            for(int i = 0; i < N; i++)
+                C[i] = MyScanner.readInt();
+            max = Integer.MIN_VALUE;
+            DP = new int[N][2];
+            for(int i = 0; i < N; i++)
+            {
+                DP[i][0] = 0; //LIS
+                DP[i][1] = 0; //LDS
+            }
+            LIS(0);
+            LDS(0);
+            for(int i = 0; i < N; i++)
+                max = Integer.max(max, DP[i][0] + DP[i][1]);
+            pw.println(max - 1);
+        }
+        pw.flush(); pw.close(); MyScanner.close();
+    }
+
+    /**
+     * Longest increasing sub-sequence
+     * @param n
+     * @return
+     */
+    private static int LIS(int n)
+    {
+        if(DP[n][0] != 0) return DP[n][0];
+        for(int i = n; i < N; i++)
+        {
+            if(DP[i][0] == 0) //very important. Else the values for overlapping subproblems will be recalculated which results in TLE
+            {
+                for (int j = i + 1; j < N; j++) {
+                    if (C[j] > C[i]) {
+                        int value = LIS(j);
+                        DP[i][0] = Integer.max(DP[i][0], value + 1);
+                    }
+                }
+                DP[i][0] = (DP[i][0] == 0) ? 1 : DP[i][0];
+            }
+        }
+        return DP[n][0];
+    }
+
+    /**
+     * Longest decreasing sub-sequence
+     * @param n
+     * @return
+     */
+    private static int LDS(int n)
+    {
+        if(DP[n][1] != 0) return DP[n][1];
+        for(int i = n; i < N; i++)
+        {
+            if(DP[i][1] == 0) //very important. Else the values for overlapping subproblems will be recalculated which results in TLE
+            {
+                for (int j = i + 1; j < N; j++)
+                {
+                    if (C[j] < C[i])
+                    {
+                        int value = LDS(j);
+                        DP[i][1] = Integer.max(DP[i][1], value + 1);
+                    }
+                }
+                DP[i][1] = (DP[i][1] == 0) ? 1 : DP[i][1];
+            }
+        }
+        return DP[n][1];
+    }
+
 }

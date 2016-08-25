@@ -1,21 +1,15 @@
-package problems.devideandconquer;
+package problems.dynamicprogramming;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
+import java.util.Arrays;
 import java.util.StringTokenizer;
 
 /**
- *    
- * @author gouthamvidyapradhan
- * Accepted 0.040 s.  Binary search the answer
- * MyAlgorithm O(n log n) - Worst case = > 1000 x log 199000000
- *
+ * Created by gouthamvidyapradhan on 06/06/2016.
+ * Accepted 0.100 s. Simple Knapsack DP algorithm but a bit tricky to store DP values with mod values.
  */
-public class FillTheContainers {
-
+public class DivisibleGroupSums
+{
     /**
      * Scanner class
      *
@@ -121,110 +115,84 @@ public class FillTheContainers {
     }
 
     private static PrintWriter pw = new PrintWriter(new BufferedOutputStream(System.out, 1000000));
-    private static int min, max, fill, N, M, conCnt;
+    private static int N, Q, M, D;
+    private static long sum, count;
     private static int[] A;
+    private static long[][][] DP;
+    private static final String SET = "SET ", QUERY = "QUERY ";
 
-    /**
-     * Status of each check
-     * @author gouthamvidyapradhan
-     *
-     */
-    private static enum Status
-    {
-    	LOW,
-    	HIGH,
-    	CORRECT;
-    }
     /**
      * Main method
      * @param args
      * @throws Exception
      */
-	public static void main(String[] args)  throws Exception  
-	{
-		while(true)
-		{
-			while((N = MyScanner.readInt()) == -1);
-			if(N == -2) break;
-			M = MyScanner.readInt();
-			A = new int[N];
-			int temp, sum = 0, high = Integer.MIN_VALUE;
-			for(int i = 0; i < N; i++)
-			{
-				temp = MyScanner.readInt();
-				high = Math.max(high, temp);
-				sum += temp;
-				A[i] = temp;
-			}
-			min = Integer.MAX_VALUE; 
-			if(M < N)
-			{
-				int l = high, h = sum, m;
-				while(l < h - 1)
-				{
-					m = (l + h) / 2;
-					Status status = check(m);
-					switch(status)
-					{
-						case LOW:
-								l = m;
-								break;
-								
-						case HIGH:
-								h = m;
-								break;
-								
-						case CORRECT:
-								min = Math.min(min, m);
-								h = m; //explore next lower value
-								break;
-					}
-				}
-				if(l == h - 1)
-				{
-					Status status;
-					status = check(l);
-					if(status == Status.CORRECT)
-						min = Math.min(min, l);
-					status = check(h);
-					if(status == Status.CORRECT)
-						min = Math.min(min, h);
-				}
-				pw.println(min);
-			}
-			else
-				pw.println(high);
-		}
-		pw.flush(); pw.close(); MyScanner.close();
-	}
-	
-	/**
-	 * Check if the answer fits
-	 * @param ans
-	 * @return
-	 */
-	private static Status check(int ans)
-	{
-		conCnt = M; fill = 0;
-		max = Integer.MIN_VALUE;
-		for(int i = 0; i < N ; i++)
-		{
-			if(conCnt == 0)
-				return Status.LOW;
-			int a = A[i];
-			if((fill + a) > ans)
-			{
-				if(--conCnt == 0)
-					return Status.LOW;
-				max = Math.max(max, fill);
-				fill = a;
-			}
-			else
-				fill += a;
-		}
-		conCnt--; // do the filling for the last container. There can be containers left over but don't care about it.
-		max = Math.max(max, fill);
-		if(max == ans) return Status.CORRECT;
-		else return Status.HIGH;
-	}
+    public static void main(String[] args) throws Exception
+    {
+        int set = 0;
+        while(true)
+        {
+            while ((N = MyScanner.readInt()) == -1) ;
+            Q = MyScanner.readInt();
+            if(N == 0) break;
+            A = new int[N];
+            for(int i = 0; i < N; i ++)
+                A[i] = MyScanner.readInt();
+            pw.println(SET + ++set + ":");
+            for(int i = 1; i <= Q; i++)
+            {
+                D = MyScanner.readInt();
+                M = MyScanner.readInt();
+                DP = new long[201][M + 1][40 + 1];
+                for(int j = 0; j < 201; j++)
+                    for(int k = 0; k < M + 1; k++)
+                        Arrays.fill(DP[j][k], - 1);
+                pw.println(QUERY + i + ": " + dp(0, 0, 0));
+            }
+        }
+        pw.flush(); pw.close(); MyScanner.close();
+    }
+
+    /**
+     * Mod function, handle -ve values
+     * @param sum
+     * @return
+     */
+    private static int getMod(long sum)
+    {
+        int mod = (int)(sum % D);
+        if(mod < 0)
+        {
+            mod *= -1;
+            mod += 20;
+        }
+        return mod;
+    }
+
+    /**
+     * Knapsack DP algorithm with a simple mod function.
+     * @param i
+     * @param total
+     * @param sum
+     * @return
+     */
+    private static long dp(int i, int total, long sum)
+    {
+        int mod = getMod(sum);
+        if(DP[i][total][mod] != -1) return DP[i][total][mod];
+        else
+        {
+            if(total == M)
+                return ((sum % D) == 0) ? 1 : 0;
+            else
+            {
+                if(i != N)
+                {
+                    long ret1 = dp(i + 1, total, sum);
+                    long ret2 = dp(i + 1, total + 1, sum + A[i]);
+                    DP[i][total][mod] = ((ret1 == -1) ? 0 : ret1) + ((ret2 == -1) ? 0 : ret2);
+                }
+            }
+        }
+        return DP[i][total][mod];
+    }
 }

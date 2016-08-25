@@ -1,21 +1,18 @@
-package problems.devideandconquer;
+package problems.dynamicprogramming;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.StringTokenizer;
 
 /**
- *    
- * @author gouthamvidyapradhan
- * Accepted 0.040 s.  Binary search the answer
- * MyAlgorithm O(n log n) - Worst case = > 1000 x log 199000000
+ * Created by gouthamvidyapradhan on 24/05/2016.
+ * Accepted 0.360s. Very interesting 3-D DP algorithm, was very confusing to understand the problem statement clearly. After reading about Max 2D array sum,
+ * I was able to solve it with ease.
  *
+ * My Algorithm. Use Max 2D array DP sum and then use the linear array max sum for the third dimension.
+ * O(N ^ 5) + O(N ^ 3) + O(N ^ 2)
  */
-public class FillTheContainers {
-
+public class GarbageHeap
+{
     /**
      * Scanner class
      *
@@ -121,110 +118,54 @@ public class FillTheContainers {
     }
 
     private static PrintWriter pw = new PrintWriter(new BufferedOutputStream(System.out, 1000000));
-    private static int min, max, fill, N, M, conCnt;
-    private static int[] A;
+    private static long G[][][];
+    private static long max;
+    private static long[] M;
+    private static int A, B, C, T;
 
-    /**
-     * Status of each check
-     * @author gouthamvidyapradhan
-     *
-     */
-    private static enum Status
-    {
-    	LOW,
-    	HIGH,
-    	CORRECT;
-    }
     /**
      * Main method
      * @param args
-     * @throws Exception
      */
-	public static void main(String[] args)  throws Exception  
-	{
-		while(true)
-		{
-			while((N = MyScanner.readInt()) == -1);
-			if(N == -2) break;
-			M = MyScanner.readInt();
-			A = new int[N];
-			int temp, sum = 0, high = Integer.MIN_VALUE;
-			for(int i = 0; i < N; i++)
-			{
-				temp = MyScanner.readInt();
-				high = Math.max(high, temp);
-				sum += temp;
-				A[i] = temp;
-			}
-			min = Integer.MAX_VALUE; 
-			if(M < N)
-			{
-				int l = high, h = sum, m;
-				while(l < h - 1)
-				{
-					m = (l + h) / 2;
-					Status status = check(m);
-					switch(status)
-					{
-						case LOW:
-								l = m;
-								break;
-								
-						case HIGH:
-								h = m;
-								break;
-								
-						case CORRECT:
-								min = Math.min(min, m);
-								h = m; //explore next lower value
-								break;
-					}
-				}
-				if(l == h - 1)
-				{
-					Status status;
-					status = check(l);
-					if(status == Status.CORRECT)
-						min = Math.min(min, l);
-					status = check(h);
-					if(status == Status.CORRECT)
-						min = Math.min(min, h);
-				}
-				pw.println(min);
-			}
-			else
-				pw.println(high);
-		}
-		pw.flush(); pw.close(); MyScanner.close();
-	}
-	
-	/**
-	 * Check if the answer fits
-	 * @param ans
-	 * @return
-	 */
-	private static Status check(int ans)
-	{
-		conCnt = M; fill = 0;
-		max = Integer.MIN_VALUE;
-		for(int i = 0; i < N ; i++)
-		{
-			if(conCnt == 0)
-				return Status.LOW;
-			int a = A[i];
-			if((fill + a) > ans)
-			{
-				if(--conCnt == 0)
-					return Status.LOW;
-				max = Math.max(max, fill);
-				fill = a;
-			}
-			else
-				fill += a;
-		}
-		conCnt--; // do the filling for the last container. There can be containers left over but don't care about it.
-		max = Math.max(max, fill);
-		if(max == ans) return Status.CORRECT;
-		else return Status.HIGH;
-	}
+    public static void main(String[] args) throws Exception
+    {
+        T = MyScanner.readInt();
+        int count = 0;
+        while(T-- > 0)
+        {
+            while((A = MyScanner.readInt()) == -1);
+            B = MyScanner.readInt();
+            C = MyScanner.readInt();
+            M = new long[A + 1];
+            G = new long[A + 1][B + 1][C + 1];
+            max = Long.MIN_VALUE;
+            for(int i = 1; i <= A; i ++)
+                for(int j = 1; j <= B; j ++)
+                    for(int k = 1; k <= C; k ++)
+                    {
+                        long value = MyScanner.readLong();
+                        value += G[i][j - 1][k];
+                        value += G[i][j][k - 1];
+                        value -= G[i][j - 1][k - 1];
+                        G[i][j][k] = value;
+                    }
+
+            for(int i = 1; i <= B; i ++)
+                for(int j = 1; j <= C; j ++)
+                    for(int k = i; k <= B; k ++)
+                        for(int l = j; l <= C; l ++)
+                        {
+                            for(int m = 1; m <= A; m ++)
+                            {
+                                long sum = G[m][k][l] - G[m][k][j - 1] -  G[m][i - 1][l] + G[m][i - 1][j - 1];
+                                M[m] = Math.max(sum, M[m - 1] + sum);
+                                max = Math.max(max, M[m]);
+                            }
+                        }
+            if(count++ > 0)
+                pw.println();
+            pw.println(max);
+        }
+        pw.flush(); pw.close(); MyScanner.close();
+    }
 }

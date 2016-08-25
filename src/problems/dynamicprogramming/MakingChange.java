@@ -1,21 +1,18 @@
-package problems.devideandconquer;
+package problems.dynamicprogramming;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.*;
+import java.util.Arrays;
 import java.util.StringTokenizer;
 
 /**
- *    
- * @author gouthamvidyapradhan
- * Accepted 0.040 s.  Binary search the answer
- * MyAlgorithm O(n log n) - Worst case = > 1000 x log 199000000
- *
+ * Created by gouthamvidyapradhan on 18/06/2016.
+ * Accepted 0.060. Quite challenging coin change problem, similar to ExactChange. The input is missing a key data, the
+ * count of coins is not mentioned hence the worst time complexity is difficult to determine.
+ * But algorithm runs in O(N x 500) where N is total number of coins
+ * @see ExactChange
  */
-public class FillTheContainers {
-
+public class MakingChange
+{
     /**
      * Scanner class
      *
@@ -121,110 +118,64 @@ public class FillTheContainers {
     }
 
     private static PrintWriter pw = new PrintWriter(new BufferedOutputStream(System.out, 1000000));
-    private static int min, max, fill, N, M, conCnt;
-    private static int[] A;
+    private static int S;
+    private static int[] CU, SK, C;
+    private static final int[] V = {5, 10, 20, 50, 100, 200};
 
-    /**
-     * Status of each check
-     * @author gouthamvidyapradhan
-     *
-     */
-    private static enum Status
-    {
-    	LOW,
-    	HIGH,
-    	CORRECT;
-    }
     /**
      * Main method
      * @param args
      * @throws Exception
      */
-	public static void main(String[] args)  throws Exception  
-	{
-		while(true)
-		{
-			while((N = MyScanner.readInt()) == -1);
-			if(N == -2) break;
-			M = MyScanner.readInt();
-			A = new int[N];
-			int temp, sum = 0, high = Integer.MIN_VALUE;
-			for(int i = 0; i < N; i++)
-			{
-				temp = MyScanner.readInt();
-				high = Math.max(high, temp);
-				sum += temp;
-				A[i] = temp;
-			}
-			min = Integer.MAX_VALUE; 
-			if(M < N)
-			{
-				int l = high, h = sum, m;
-				while(l < h - 1)
-				{
-					m = (l + h) / 2;
-					Status status = check(m);
-					switch(status)
-					{
-						case LOW:
-								l = m;
-								break;
-								
-						case HIGH:
-								h = m;
-								break;
-								
-						case CORRECT:
-								min = Math.min(min, m);
-								h = m; //explore next lower value
-								break;
-					}
-				}
-				if(l == h - 1)
-				{
-					Status status;
-					status = check(l);
-					if(status == Status.CORRECT)
-						min = Math.min(min, l);
-					status = check(h);
-					if(status == Status.CORRECT)
-						min = Math.min(min, h);
-				}
-				pw.println(min);
-			}
-			else
-				pw.println(high);
-		}
-		pw.flush(); pw.close(); MyScanner.close();
-	}
-	
-	/**
-	 * Check if the answer fits
-	 * @param ans
-	 * @return
-	 */
-	private static Status check(int ans)
-	{
-		conCnt = M; fill = 0;
-		max = Integer.MIN_VALUE;
-		for(int i = 0; i < N ; i++)
-		{
-			if(conCnt == 0)
-				return Status.LOW;
-			int a = A[i];
-			if((fill + a) > ans)
-			{
-				if(--conCnt == 0)
-					return Status.LOW;
-				max = Math.max(max, fill);
-				fill = a;
-			}
-			else
-				fill += a;
-		}
-		conCnt--; // do the filling for the last container. There can be containers left over but don't care about it.
-		max = Math.max(max, fill);
-		if(max == ans) return Status.CORRECT;
-		else return Status.HIGH;
-	}
+    public static void main(String[] args) throws Exception
+    {
+        while(true)
+        {
+            String line = MyScanner.readLine();
+            StringTokenizer st = new StringTokenizer(line);
+            C = new int[6];
+            for(int i = 0; i < 6; i++)
+                C[i] = Integer.parseInt(st.nextToken().trim());
+            if(C[0] == 0 && C[1] == 0 && C[2] == 0 && C[3] == 0 && C[4] == 0 && C[5] == 0)
+                break;
+            StringTokenizer st1 = new StringTokenizer(st.nextToken(), ".");
+            S = (Integer.parseInt(st1.nextToken().trim()) * 100) + Integer.parseInt(st1.nextToken().trim());
+            int sum = 0;
+            for(int i = 0; i < 6; i++)
+                sum += C[i] * V[i];
+            CU = new int[1001]; //Customer
+            SK = new int[sum + 1]; //Shopkeeper
+            Arrays.fill(SK, Integer.MAX_VALUE);
+            Arrays.fill(CU, Integer.MAX_VALUE);
+            SK[0] = 0; CU[0] = 0;
+            for(int i = 0; i < 6; i ++)
+            {
+                for(int j = 0; j <= sum && ((j + V[i]) <= sum); j ++)
+                    if(SK[j] != Integer.MAX_VALUE)
+                        SK[j + V[i]] = Math.min(SK[j] + 1, SK[j + V[i]]);
+            }
+            for(int i = 0; i < 6; i ++)
+            {
+                for(int k = 0, count = C[i]; k < count; k++)
+                {
+                    for(int j = 1000; j >= 0; j--)
+                    {
+                        if(CU[j] != Integer.MAX_VALUE && (j + V[i]) <= 1000)
+                            CU[j + V[i]] = Integer.min(CU[j + V[i]], CU[j] + 1);
+                    }
+                }
+            }
+            int min = CU[S];
+            int change;
+            for(int i = S + 1; (i <= 1000) && ((i - S) <= sum); i++)
+            {
+                change = i - S;
+                if(SK[change] != Integer.MAX_VALUE && CU[i] != Integer.MAX_VALUE)
+                    min = Math.min(min, CU[i] + SK[change]);
+            }
+            pw.printf("%3d", min);
+            pw.println();
+        }
+        pw.flush(); pw.close(); MyScanner.close();
+    }
 }
