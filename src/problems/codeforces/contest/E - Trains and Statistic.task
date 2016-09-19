@@ -1,0 +1,35 @@
+24 E - Trains and Statistic
+6 SINGLE
+8 STANDARD
+-1
+8 STANDARD
+-1
+2
+0
+8 4
+4 4 4
+
+2 6
+
+1
+1
+10 5
+2 3 5 5
+
+3 17
+
+1
+40 TopCoder/src/problems/codeforces/contest
+8 -Xmx256M
+4 Main
+33 problems.codeforces.contest.TaskE
+39 net.egork.chelper.checkers.TokenChecker
+0 
+0
+10 2016.05.16
+30 Codeforces Round #353 (Div. 2)
+1
+35 problems.codeforces.CF353.MyScanner
+19 java.io.PrintWriter
+0
+0
