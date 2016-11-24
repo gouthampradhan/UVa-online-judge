@@ -9,6 +9,9 @@ import java.util.StringTokenizer;
 /**
  * Created by PRADHANG on 11/24/2016.
  * Accepted 0.300
+ * The unique node index is represented as below
+ * ROW            COLUMN         DIRECTION (N S E W)      NUMBER_OF_ROTATION (0, 1, 2 or 3)
+ * First 9 bits   Next 9 bits    Next 4 bits              Last 3 bits
  */
 public class RoundAndRoundMaze
 {
